@@ -1,0 +1,6 @@
+References
+==========
+
+.. currentmodule:: 'pumas'
+
+
