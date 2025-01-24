@@ -4,7 +4,13 @@ pytest
 pytest-cov
 pytest-mock
 sphinx
+sphinx_toolbox
+sphinxcontrib-napoleon
+sphinxcontrib.mermaid
+matplotlib
 black
 flake8
 isort
 pre-commit
+jupyter
+black[jupyter]

@@ -14,7 +14,7 @@ repos:
     - id: isort
       name: isort (python)
 - repo: https://github.com/ambv/black
-  rev: 23.9.1
+  rev: 24.10.0
   hooks:
     - id: black
       files: '.*\.pyi?$'

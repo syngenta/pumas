@@ -2,7 +2,7 @@
 
 First off, thanks for taking the time to contribute! :tada::+1:
 
-The following is a set of guidelines for contributing to pumas, which are hosted in the [Syngenta Organization](https://github.com/syngenta) on GitHub. 
+The following is a set of guidelines for contributing to pumas, which are hosted in the [Syngenta Organization](https://github.com/syngenta) on GitHub.
 These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 ## Contribution Terms and License
