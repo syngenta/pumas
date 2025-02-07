@@ -1,5 +1,29 @@
-pumas
+PUMAS
 =======================================
+
+
+.. image:: https://img.shields.io/pypi/v/pumas
+   :target: https://pypi.python.org/pypi/pumas
+   :alt: PyPI - Version
+.. image:: https://static.pepy.tech/badge/pumas/month
+   :target: https://pepy.tech/project/pumas
+   :alt: Downloads monthly
+.. image:: https://static.pepy.tech/badge/pumas
+   :target: https://pepy.tech/project/pumas
+   :alt: Downloads total
+.. image:: https://img.shields.io/github/actions/workflow/status/syngenta/pumas/test_suite.yml?branch=main
+   :alt: GitHub Workflow Status
+.. image:: https://readthedocs.org/projects/pumas-toolkit/badge/?version=latest
+   :target: https://pumas-toolkit.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+.. image:: https://img.shields.io/badge/contributions-welcome-blue
+   :target: https://github.com/syngenta/pumas/blob/main/CONTRIBUTING.md
+   :alt: Contributions
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+   :target: https://opensource.org/licenses/MIT
+---------------------
 
 PUMAS
 
