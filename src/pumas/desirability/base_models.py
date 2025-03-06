@@ -1,20 +1,18 @@
-import pumas.desirability.desirability_utility_functions
+from abc import abstractmethod
+
 from pumas.architecture.parametrized_strategy import AbstractParametrizedStrategy
-from pumas.error_propagation.uncertainties import UFloat
-from pumas.utils.module_import import switch_library
+from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 
 class Desirability(AbstractParametrizedStrategy):
-    def compute_score(self, x: float) -> float:
-        results = self._get_partial_utility_function(x=x)
-        return results
+    """Abstract base class for desirability functions."""
 
-    def compute_uscore(self, x: UFloat) -> UFloat:
-        with switch_library(
-            pumas.desirability.desirability_utility_functions,
-            "math",
-            pumas.desirability.desirability_utility_functions.math_switcher,
-            "umath",
-        ):
-            results = self._get_partial_utility_function(x=x)
-        return results
+    @abstractmethod
+    def compute_numeric(self, x: float) -> float:
+        """Computes the desirability score on numeric values."""
+        pass
+
+    @abstractmethod
+    def compute_ufloat(self, x: UFloat) -> UFloat:
+        """Computes the desirability score on UFloat values."""
+        pass

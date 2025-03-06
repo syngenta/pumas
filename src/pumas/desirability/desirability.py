@@ -52,12 +52,12 @@ Class Diagram
             parameter_manager ParameterManager
             coefficient_parameters_names List[str]
             input_parameters_names List[str]
-            get_coefficient_parameters_values() Dict[str, Any]
-            set_coefficient_parameters_values(Dict[str, Any])
+            get_parameters_values() Dict[str, Any]
+            set_parameters_values(Dict[str, Any])
         }
         class BaseDesirability {
-        +compute_score(x: float): float
-        +compute_uscore(x: UFloat): UFloat
+        +compute_numeric(x: float): float
+        +compute_ufloat(x: UFloat): UFloat
         }
         class SigmoidDesirability {
         +parameters ['low', 'high', 'k', 'base', 'shift']

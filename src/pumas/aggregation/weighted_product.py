@@ -1,11 +1,29 @@
-from typing import Iterable
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
+from pumas.aggregation.aggregation_utils import run_data_validation_pipeline
 from pumas.aggregation.base_models import BaseAggregation
+from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 
-def weighted_product(values: Iterable, weights: Iterable):
+def compute_numeric_weighted_product(
+    values: List[float], weights: Optional[List[float]] = None
+) -> float:
+    values, weights = run_data_validation_pipeline(values=values, weights=weights)
+    result: float = np.prod(np.power(values, weights))
+    return float(result)
+
+
+def compute_ufloat_weighted_product(
+    values: List[UFloat], weights: Optional[List[float]] = None
+) -> UFloat:
+    values, weights = run_data_validation_pipeline(values=values, weights=weights)
+    result: UFloat = np.prod(np.power(values, weights))
+    return result
+
+
+class WeightedProductAggregation(BaseAggregation):
     """
     Computes the weighted product of a set of values with corresponding weights.
 
@@ -19,38 +37,73 @@ def weighted_product(values: Iterable, weights: Iterable):
         - :math:`w_i` is the weight for each value :math:`x_i`
         - :math:`n` is the number of elements in values and weights arrays
 
-    This model is commonly used in multi-criteria decision-making, where each criterion
-    (represented by a value) is raised to the power of its weight, and then all are multiplied together.
+    Example:
+    >>> from pumas.aggregation import aggregation_catalogue
 
-    Args:
-        values (Iterable): The values representing different criteria or attributes.
-        weights (Iterable): The weights for each value, representing the importance of each criterion.
+    >>> aggregator_class = aggregation_catalogue.get("product")
 
-    Returns:
-         Union[float,UFloat]: Resultant weighted product.
+    >>> aggregator = aggregator_class()
 
-    Note:
-        - Unlike the weighted geometric mean, weights are not normalized in this model.
-        - The result is sensitive to the scale of the weights.
-        - A weight of 0 for a criterion effectively removes it from consideration.
-        - This model is useful when criteria are independent and a compensatory approach is not desired.
+    >>> values = [1.0, 2.0, 3.0]
+    >>> weights = [0.2, 0.3, 0.5]
+    >>> result = aggregator.compute_numeric(values=values, weights=weights)
+    >>> print(f"{result:.2f}")
+    2.13
+
+    >>> result = aggregator(values=values, weights=weights) # Same as compute_numeric
+    >>> print(f"{result:.2f}")
+    2.13
+
+    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
+    >>> weights = [0.2, 0.3, 0.5]
+    >>> result = aggregator.compute_ufloat(values=values, weights=weights)
+    >>> print(result)
+    2.13+/-0.13
     """  # noqa E501
 
-    weights = np.array(weights)
-    values = np.array(values)
-    weighted_sum = np.prod(values**weights)
-    result = weighted_sum
+    def __init__(self, params: Optional[Dict[str, Any]] = None):
+        super().__init__()
+        self._set_parameter_definitions({})
+        self._validate_and_set_parameters(params)
 
-    return result
+    def compute_numeric(
+        self, values: List[float], weights: Optional[List[float]] = None
+    ) -> float:
+        """
+        Compute the weighted product for numeric input values.
 
+        Args:
+            values (List[float]): The list of numeric values to be aggregated.
+            weights (Optional[List[float]]): The list of weights corresponding to each value.
+                If None, equal weights are assumed.
 
-class WeightedProductAggregation(BaseAggregation):
-    def __init__(self):
-        super().__init__(
-            utility_function=weighted_product,
-            coefficient_parameters_names=[],
-            input_parameters_names=["values", "weights"],
+        Returns:
+            float: The computed weighted summation.
+
+        """  # noqa: E501
+        new_values, new_weights = run_data_validation_pipeline(
+            values=values, weights=weights
         )
+        return compute_numeric_weighted_product(values=new_values, weights=new_weights)
 
-        attributes_change_map = {}
-        self.set_coefficient_parameters_attributes(attributes_map=attributes_change_map)
+    def compute_ufloat(
+        self, values: List[UFloat], weights: Optional[List[float]] = None
+    ) -> UFloat:
+        """
+        Compute the weighted product for uncertain float input values.
+
+        Args:
+            values (List[UFloat]): The list of uncertain float values to be aggregated.
+            weights (Optional[List[float]]): The list of weights corresponding to each value.
+                If None, equal weights are assumed.
+
+        Returns:
+            UFloat: The computed weighted summation with uncertainty.
+        """  # noqa: E501
+        new_values, new_weights = run_data_validation_pipeline(
+            values=values, weights=weights
+        )
+        return compute_ufloat_weighted_product(values=new_values, weights=new_weights)
+
+    __call__ = compute_numeric

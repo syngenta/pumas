@@ -1,3 +1,4 @@
+# type: ignore
 """Sigmoid functions"""
 
 __all__ = ["DoubleSigmoid"]

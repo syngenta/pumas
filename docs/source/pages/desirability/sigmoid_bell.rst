@@ -6,10 +6,6 @@ High-level Class interface
 .. autoclass:: pumas.desirability.sigmoid_bell.SigmoidBell
     :noindex:
 
-Low-level Utility Function
-----------------------------
-.. autofunction:: pumas.desirability.sigmoid_bell.sigmoid_bell
-    :noindex:
 
 Parameter Analysis
 ---------------------

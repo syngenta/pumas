@@ -1,21 +1,18 @@
 import math
-import sys
 
 import numpy as np
 import pytest
 
-from pumas.desirability import desirability_catalogue
 from pumas.desirability.bell import (
+    bell,
     get_bell_inflection_points,
     get_bell_slope_pivot_points,
 )
 
 
 @pytest.fixture
-def utility_function():
-    desirability_class = desirability_catalogue.get("bell")
-    desirability_instance = desirability_class()
-    return desirability_instance.utility_function
+def desirability_utility_function():
+    return bell
 
 
 @pytest.mark.parametrize("x", [0.0, 100.0, -100, 1e6, 1e-6])
@@ -31,7 +28,7 @@ def utility_function():
     ],
 )
 def test_bell_numerical_stability(
-    utility_function, x, width, slope, center, invert, shift
+    desirability_utility_function, x, width, slope, center, invert, shift
 ):
     """
     Test the numerical stability of the bell utility function.
@@ -42,7 +39,14 @@ def test_bell_numerical_stability(
 
     This test verifies that the function remains stable across various input combinations.
     """  # noqa E501
-    result = utility_function(x, width, slope, center, invert, shift)
+    params = {
+        "width": width,
+        "slope": slope,
+        "center": center,
+        "invert": invert,
+        "shift": shift,
+    }
+    result = desirability_utility_function(x=x, **params)
     assert result is not None, "Result is None"
     assert not math.isnan(result), "Result is NaN"
     assert not math.isinf(result), "Result is infinity"
@@ -59,7 +63,7 @@ def test_bell_numerical_stability(
         (5.0, 0.5, 10.0),
     ],
 )
-def test_bell_symmetry(utility_function, x, width, slope, center):
+def test_bell_symmetry(desirability_utility_function, x, width, slope, center):
     """
     Test the symmetry of the bell utility function.
 
@@ -68,12 +72,28 @@ def test_bell_symmetry(utility_function, x, width, slope, center):
 
     This test verifies that f(center - x) = f(center + x) for various input combinations.
     """  # noqa E501
-    y1 = utility_function(center - x, width, slope, center)
-    y2 = utility_function(center + x, width, slope, center)
+    params_1 = {
+        "width": width,
+        "slope": slope,
+        "center": center,
+        "invert": False,
+        "shift": 0.0,
+    }
+    y1 = desirability_utility_function(x=center - x, **params_1)
+
+    params_2 = {
+        "width": width,
+        "slope": slope,
+        "center": center,
+        "invert": False,
+        "shift": 0.0,
+    }
+    y2 = desirability_utility_function(x=center + x, **params_2)
+
     assert math.isclose(y1, y2, rel_tol=1e-9), f"Function not symmetric for x={x}"
 
 
-def test_bell_peak_at_center(utility_function):
+def test_bell_peak_at_center(desirability_utility_function):
     """
     Test that the bell utility function peaks at its center.
 
@@ -83,13 +103,21 @@ def test_bell_peak_at_center(utility_function):
     This test verifies that f(center) = 1.0 for a specific set of parameters.
     """  # noqa E501
     width, slope, center = 1.0, 2.0, 0.5
-    peak_value = utility_function(center, width, slope, center)
+
+    params = {
+        "width": width,
+        "slope": slope,
+        "center": center,
+        "invert": False,
+        "shift": 0.0,
+    }
+    peak_value = desirability_utility_function(x=center, **params)
     assert math.isclose(
         peak_value, 1.0, rel_tol=1e-9
     ), "Peak not at 1.0 for center value"
 
 
-def test_bell_invert(utility_function):
+def test_bell_invert(desirability_utility_function):
     """
     Test the invert parameter of the bell utility function.
 
@@ -99,14 +127,30 @@ def test_bell_invert(utility_function):
     This test verifies that f(x, invert=False) + f(x, invert=True) = 1.0 for a specific set of parameters.
     """  # noqa E501
     x, width, slope, center = 0.5, 1.0, 2.0, 0.5
-    normal_value = utility_function(x, width, slope, center, invert=False)
-    inverted_value = utility_function(x, width, slope, center, invert=True)
+
+    params_normal = {
+        "width": width,
+        "slope": slope,
+        "center": center,
+        "invert": False,
+        "shift": 0.0,
+    }
+    params_inverted = {
+        "width": width,
+        "slope": slope,
+        "center": center,
+        "invert": True,
+        "shift": 0.0,
+    }
+
+    normal_value = desirability_utility_function(x, **params_normal)
+    inverted_value = desirability_utility_function(x, **params_inverted)
     assert math.isclose(
         normal_value + inverted_value, 1.0, rel_tol=1e-9
     ), "Invert not working correctly"
 
 
-def test_bell_shift(utility_function):
+def test_bell_shift(desirability_utility_function):
     """
     Test the shift parameter of the bell utility function.
 
@@ -124,7 +168,8 @@ def test_bell_shift(utility_function):
 
     # Calculate reference values
     reference_values = [
-        utility_function(x, width, slope, center, shift=0.0) for x in x_range
+        desirability_utility_function(x, width, slope, center, invert=False, shift=0.0)
+        for x in x_range
     ]
 
     # Verify that there are unshifted values below the shift value
@@ -134,7 +179,10 @@ def test_bell_shift(utility_function):
 
     # Calculate shifted values
     shifted_values = [
-        utility_function(x, width, slope, center, shift=shift_value) for x in x_range
+        desirability_utility_function(
+            x, width, slope, center, invert=False, shift=shift_value
+        )
+        for x in x_range
     ]
 
     # Verify properties of shifted values
@@ -152,7 +200,7 @@ def test_bell_shift(utility_function):
     ), "No unshifted values below shift value"
 
 
-def test_bell_shift_on_center(utility_function):
+def test_bell_shift_on_center(desirability_utility_function):
     """
     Test the effect of shift on the center point of the bell utility function.
 
@@ -162,12 +210,16 @@ def test_bell_shift_on_center(utility_function):
     This test verifies that f(center, shift=0) = f(center, shift=s) for s > 0.
     """  # noqa E501
     x, width, slope, center = 0.5, 1.0, 2.0, 0.5
-    reference = utility_function(x, width, slope, center, shift=0.0)
-    shifted = utility_function(x, width, slope, center, shift=0.2)
+    reference = desirability_utility_function(
+        x, width=width, slope=slope, center=center, invert=False, shift=0.0
+    )
+    shifted = desirability_utility_function(
+        x, width=width, slope=slope, center=center, invert=False, shift=0.2
+    )
     assert math.isclose(shifted, reference), "Shift not working correctly"
 
 
-def test_bell_width_effect(utility_function):
+def test_bell_width_effect(desirability_utility_function):
     """
     Test the effect of the width parameter on the bell utility function.
 
@@ -177,83 +229,17 @@ def test_bell_width_effect(utility_function):
     This test verifies that f(x, width=w1) < f(x, width=w2) when w1 < w2 and x is not at the center.
     """  # noqa E501
     x, slope, center = 1.0, 2.0, 0.5
-    narrow = utility_function(x, width=0.5, slope=slope, center=center)
-    wide = utility_function(x, width=2.0, slope=slope, center=center)
+    narrow = desirability_utility_function(
+        x, width=0.5, slope=slope, center=center, invert=False, shift=0.0
+    )
+    wide = desirability_utility_function(
+        x, width=2.0, slope=slope, center=center, invert=False, shift=0.0
+    )
     assert narrow < wide, "Width parameter not affecting curve width correctly"
 
 
-def test_width_close_to_zero(utility_function):
-    """
-    Test that the function raises a ValueError when width is too close to zero.
-
-    Hypothesis:
-    The function should raise a ValueError to prevent numerical instability when width is extremely small.
-    """  # noqa E501
-    with pytest.raises(
-        ValueError,
-        match="Width is too close to zero, which may cause numerical instability.",
-    ):
-        utility_function(
-            x=0.5, center=0.5, width=sys.float_info.epsilon / 2, slope=1, shift=0
-        )
-
-
-@pytest.mark.parametrize(
-    "x, center, width, slope, shift, error_type, error_msg",
-    [
-        (
-            0.5,
-            0.5,
-            sys.float_info.epsilon / 2,
-            1,
-            0,
-            ValueError,
-            "Width is too close to zero",
-        ),
-        (
-            1.0,
-            0.0,
-            -1.0,
-            1.0,
-            0.0,
-            ValueError,
-            "The 'width' parameter must be greater than 0",
-        ),
-        (
-            1.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            ValueError,
-            "The 'width' parameter must be greater than 0",
-        ),
-        (
-            1.0,
-            0.0,
-            2.0,
-            1.0,
-            2.0,
-            ValueError,
-            "The 'shift' parameter must be between 0 and 1, inclusive.",
-        ),
-    ],
-)
-def test_utility_function_raises_error(
-    utility_function, x, center, width, slope, shift, error_type, error_msg
-):
-    """
-    Test that the function raises appropriate errors for invalid inputs.
-
-    Hypothesis:
-    The function should raise specific errors with appropriate error messages for various invalid input combinations.
-    """  # noqa E501
-    with pytest.raises(error_type, match=error_msg):
-        utility_function(x=x, center=center, width=width, slope=slope, shift=shift)
-
-
 @pytest.mark.parametrize("slope", [1.0, 0.5])
-def test_bell_slope_sign_effect(utility_function, slope):
+def test_bell_slope_sign_effect(desirability_utility_function, slope):
     """
     Test the effect of the slope sign on the bell utility function.
 
@@ -263,8 +249,12 @@ def test_bell_slope_sign_effect(utility_function, slope):
     This test verifies that f(x, slope=s) = f(x, slope=-s) for various slope values.
     """  # noqa E501
     x, width, center = 0.5, 1.0, 0.5
-    p = utility_function(x=x, width=width, slope=slope, center=center)
-    n = utility_function(x=x, width=width, slope=-1 * slope, center=center)
+    p = desirability_utility_function(
+        x=x, width=width, slope=slope, center=center, invert=False, shift=0.0
+    )
+    n = desirability_utility_function(
+        x=x, width=width, slope=-1 * slope, center=center, invert=False, shift=0.0
+    )
     assert math.isclose(p, n), "Slope sign not affecting curve direction correctly"
 
 
@@ -272,7 +262,7 @@ def test_bell_slope_sign_effect(utility_function, slope):
 @pytest.mark.parametrize("slope", [1.0, 0.5])
 @pytest.mark.parametrize("width", [0.2, 0.3])
 @pytest.mark.parametrize("center", [0.3, 0.5, 0.7])
-def test_bell_slope_effect(utility_function, x, slope, width, center):
+def test_bell_slope_effect(desirability_utility_function, x, slope, width, center):
     """
     Test the effect of the slope parameter on the bell utility function.
 
@@ -286,9 +276,23 @@ def test_bell_slope_effect(utility_function, x, slope, width, center):
     """  # noqa E501
     a, b = get_bell_slope_pivot_points(center=center, width=width, slope=slope)
 
-    ref = utility_function(x, width=width, slope=slope, center=center)
-    steeper = utility_function(x, width=width, slope=slope + slope * 0.2, center=center)
-    flatter = utility_function(x, width=width, slope=slope - slope * 0.2, center=center)
+    ref = desirability_utility_function(x, width=width, slope=slope, center=center)
+    steeper = desirability_utility_function(
+        x,
+        width=width,
+        slope=slope + slope * 0.2,
+        center=center,
+        invert=False,
+        shift=0.0,
+    )
+    flatter = desirability_utility_function(
+        x,
+        width=width,
+        slope=slope - slope * 0.2,
+        center=center,
+        invert=False,
+        shift=0.0,
+    )
 
     if math.isclose(x, a) or math.isclose(x, b):
         assert math.isclose(
@@ -312,33 +316,7 @@ def test_bell_slope_effect(utility_function, x, slope, width, center):
         ), "Slope parameter not affecting curve steepness correctly"
 
 
-def test_bell_invalid_width(utility_function):
-    """
-    Test that the function raises a ValueError for invalid width values.
-
-    Hypothesis:
-    The function should raise a ValueError for non-positive width values.
-    """  # noqa E501
-    with pytest.raises(ValueError):
-        utility_function(x=0.5, width=0, slope=1.0, center=0.5)
-    with pytest.raises(ValueError):
-        utility_function(x=0.5, width=-1.0, slope=1.0, center=0.5)
-
-
-def test_bell_invalid_shift(utility_function):
-    """
-    Test that the function raises a ValueError for invalid shift values.
-
-    Hypothesis:
-    The function should raise a ValueError for shift values outside the [0, 1] range.
-    """
-    with pytest.raises(ValueError):
-        utility_function(x=0.5, width=1.0, slope=1.0, center=0.5, shift=-0.1)
-    with pytest.raises(ValueError):
-        utility_function(x=0.5, width=1.0, slope=1.0, center=0.5, shift=1.1)
-
-
-def test_bell_extreme_values(utility_function):
+def test_bell_extreme_values(desirability_utility_function):
     """
     Test the behavior of the bell utility function for extreme x values.
 
@@ -348,7 +326,9 @@ def test_bell_extreme_values(utility_function):
     This test verifies that f(x) ≈ 0 when x is very large compared to the center and width.
     """  # noqa E501
     x, width, slope, center = 1e6, 1.0, 2.0, 0.0
-    result = utility_function(x, width, slope, center)
+    result = desirability_utility_function(
+        x=x, width=width, slope=slope, center=center, invert=False, shift=0.0
+    )
     assert math.isclose(
         result, 0.0, abs_tol=1e-9
     ), "Function not approaching 0 for extreme x values"
@@ -358,7 +338,9 @@ def test_bell_extreme_values(utility_function):
     "center, width, slope",
     [(0.5, 1.0, 1.0), (0.5, 1.0, 2.0), (0.3, 0.5, 1.5), (0.7, 0.8, 2.5)],
 )
-def test_bell_inflection_points_symmetry(utility_function, center, width, slope):
+def test_bell_inflection_points_symmetry(
+    desirability_utility_function, center, width, slope
+):
     """
     Test the symmetry of the bell utility function at its inflection points.
 
@@ -368,14 +350,22 @@ def test_bell_inflection_points_symmetry(utility_function, center, width, slope)
     This test verifies that f(xa) = f(xb) where xa and xb are the inflection points.
     """  # noqa E501
     xa, xb = get_bell_inflection_points(center, width, slope)
-    ya = utility_function(xa, width, slope, center)
-    yb = utility_function(xb, width, slope, center)
-    assert math.isclose(ya, yb), "Function values at inflection points are not equal"
+    ya = desirability_utility_function(
+        x=xa, width=width, slope=slope, center=center, invert=False, shift=0.0
+    )
+    yb = desirability_utility_function(
+        x=xb, width=width, slope=slope, center=center, invert=False, shift=0.0
+    )
+    assert math.isclose(
+        a=ya, b=yb
+    ), "Function values at inflection points are not equal"
 
 
 @pytest.mark.parametrize("center, width", [(0.5, 1.0), (0.3, 0.5), (0.7, 0.8)])
 @pytest.mark.parametrize("slope", [0.5, 1.0, 2.0, 5.0])
-def test_bell_slope_pivot_points_symmetry(utility_function, center, width, slope):
+def test_bell_slope_pivot_points_symmetry(
+    desirability_utility_function, center, width, slope
+):
     """
     Test the symmetry of the bell utility function at its slope pivot points.
 
@@ -386,15 +376,23 @@ def test_bell_slope_pivot_points_symmetry(utility_function, center, width, slope
     """  # noqa E501
     xa, xb = get_bell_slope_pivot_points(center, width, slope)
 
-    ya = utility_function(xa, width, slope, center)
-    yb = utility_function(xb, width, slope, center)
+    ya = desirability_utility_function(
+        x=xa, width=width, slope=slope, center=center, invert=False, shift=0.0
+    )
+    yb = desirability_utility_function(
+        x=xb, width=width, slope=slope, center=center, invert=False, shift=0.0
+    )
 
-    assert math.isclose(ya, yb), "Function values at inflection points are not equal"
-    assert math.isclose(ya, 0.5), "Function value at pivot point is not 0.5"
+    assert math.isclose(
+        a=ya, b=yb
+    ), "Function values at inflection points are not equal"
+    assert math.isclose(a=ya, b=0.5), "Function value at pivot point is not 0.5"
 
 
 @pytest.mark.parametrize("center, width", [(0.5, 1.0), (0.3, 0.5), (0.7, 0.8)])
-def test_bell_slope_pivot_points_slope_invariance(utility_function, center, width):
+def test_bell_slope_pivot_points_slope_invariance(
+    desirability_utility_function, center, width
+):
     """
     Test the slope invariance property of the bell utility function at its slope pivot points.
 
@@ -411,7 +409,14 @@ def test_bell_slope_pivot_points_slope_invariance(utility_function, center, widt
     slopes = [0.5, 1.0, 2.0]
 
     results = [
-        (utility_function(xa, width, s, center), utility_function(xb, width, s, center))
+        (
+            desirability_utility_function(
+                x=xa, width=width, slope=s, center=center, invert=False, shift=0.0
+            ),
+            desirability_utility_function(
+                x=xb, width=width, slope=s, center=center, invert=False, shift=0.0
+            ),
+        )
         for s in slopes
         for xa, xb in [get_bell_slope_pivot_points(center=center, width=width, slope=s)]
     ]

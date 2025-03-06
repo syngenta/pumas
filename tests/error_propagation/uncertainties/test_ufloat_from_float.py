@@ -1,6 +1,7 @@
+# type: ignore
 import pytest
 
-from pumas.error_propagation.uncertainties import (
+from pumas.uncertainty.uncertainties_wrapper import (
     UFloat,
     float_to_ufloat_conversion_catalogue,
     ufloat_from_float,

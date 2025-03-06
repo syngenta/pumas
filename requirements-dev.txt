@@ -14,3 +14,4 @@ isort
 pre-commit
 jupyter
 black[jupyter]
+scipy

@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 
 from pumas.plotting.desirability_parameter_analysis import (

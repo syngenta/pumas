@@ -3,10 +3,8 @@ Multistep
 
 High-level Class interface
 ----------------------------
-
-
-Low-level Utility Function
-----------------------------
+.. autoclass:: pumas.desirability.multistep.MultiStep
+    :noindex:
 
 
 Parameter Analysis

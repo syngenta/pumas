@@ -1,3 +1,4 @@
+# type: ignore
 """Step functions"""
 
 __all__ = ["RightStep", "LeftStep", "Step"]

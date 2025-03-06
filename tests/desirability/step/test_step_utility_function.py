@@ -1,96 +1,29 @@
 import pytest
 
-from pumas.desirability import desirability_catalogue
-
-
-@pytest.fixture
-def desirability_leftstep():
-    desirability_class = desirability_catalogue.get("leftstep")
-    desirability_instance = desirability_class()
-    return desirability_instance
-
-
-@pytest.fixture
-def desirability_rightstep():
-    desirability_class = desirability_catalogue.get("rightstep")
-    desirability_instance = desirability_class()
-    return desirability_instance
-
-
-@pytest.fixture
-def desirability_step():
-    desirability_class = desirability_catalogue.get("step")
-    desirability_instance = desirability_class()
-    return desirability_instance
-
-
-@pytest.fixture
-def utility_function_leftstep(desirability_leftstep):
-    return desirability_leftstep.utility_function
-
-
-@pytest.fixture
-def utility_function_rightstep(desirability_rightstep):
-    return desirability_rightstep.utility_function
-
-
-@pytest.fixture
-def utility_function_step(desirability_step):
-    return desirability_step.utility_function
-
-
-@pytest.mark.parametrize(
-    "shift, error_type, error_msg",
-    [
-        (-0.1, ValueError, "Shift must be between 0 and 1"),
-        (1.1, ValueError, "Shift must be between 0 and 1"),
-    ],
+from pumas.desirability.step import (
+    compute_numeric_left_step,
+    compute_numeric_right_step,
+    compute_numeric_step,
 )
-def test_leftstep_wrong_shift(utility_function_leftstep, shift, error_type, error_msg):
-    x = 50.0
-    low = 0.0
-    high = 100.0
-
-    with pytest.raises(error_type, match=error_msg):
-        utility_function_leftstep(x, low=low, high=high, shift=shift)
 
 
-@pytest.mark.parametrize(
-    "shift, error_type, error_msg",
-    [
-        (-0.1, ValueError, "Shift must be between 0 and 1"),
-        (1.1, ValueError, "Shift must be between 0 and 1"),
-    ],
-)
-def test_rightstep_wrong_shift(
-    utility_function_rightstep, shift, error_type, error_msg
-):
-    x = 50.0
-    low = 0.0
-    high = 100.0
+@pytest.fixture
+def desirability_utility_function_leftstep():
+    return compute_numeric_left_step
 
-    with pytest.raises(error_type, match=error_msg):
-        utility_function_rightstep(x, low=low, high=high, shift=shift)
+
+@pytest.fixture
+def desirability_utility_function_rightstep():
+    return compute_numeric_right_step
+
+
+@pytest.fixture
+def desirability_utility_function_step():
+    return compute_numeric_step
 
 
 @pytest.mark.parametrize(
-    "shift, error_type, error_msg",
-    [
-        (-0.1, ValueError, "Shift must be between 0 and 1"),
-        (1.1, ValueError, "Shift must be between 0 and 1"),
-    ],
-)
-def test_step_wrong_shift(utility_function_step, shift, error_type, error_msg):
-    x = 50.0
-    low = 0.0
-    high = 100.0
-
-    with pytest.raises(error_type, match=error_msg):
-        utility_function_step(x, low=low, high=high, shift=shift)
-
-
-@pytest.mark.parametrize(
-    "utility_function, x, low, high, expected",
+    "name, x, low, high, expected",
     [
         ("leftstep", 0.5, 1.0, 2.0, 1.0),
         ("leftstep", 1.5, 1.0, 2.0, 0.0),
@@ -102,10 +35,10 @@ def test_step_wrong_shift(utility_function_step, shift, error_type, error_msg):
     ],
 )
 def test_step_functions_basic(
-    desirability_leftstep,
-    desirability_rightstep,
-    desirability_step,
-    utility_function,
+    desirability_utility_function_leftstep,
+    desirability_utility_function_rightstep,
+    desirability_utility_function_step,
+    name,
     x,
     low,
     high,
@@ -120,24 +53,25 @@ def test_step_functions_basic(
     - Middle step should return 1 when low <= x <= high, 0 otherwise.
     """  # noqa: E501
     utility_functions = {
-        "leftstep": desirability_leftstep.utility_function,
-        "rightstep": desirability_rightstep.utility_function,
-        "step": desirability_step.utility_function,
+        "leftstep": desirability_utility_function_leftstep,
+        "rightstep": desirability_utility_function_rightstep,
+        "step": desirability_utility_function_step,
     }
-    assert utility_functions[utility_function](x, low=low, high=high) == pytest.approx(
-        expected
-    )
+    assert utility_functions[name](x, low=low, high=high) == pytest.approx(expected)
 
 
 @pytest.mark.parametrize(
-    "utility_function, param_to_change",
+    "name, param_to_change",
     [
         ("leftstep", "high"),
         ("rightstep", "low"),
     ],
 )
 def test_step_functions_unused_param(
-    desirability_leftstep, desirability_rightstep, utility_function, param_to_change
+    desirability_utility_function_leftstep,
+    desirability_utility_function_rightstep,
+    name,
+    param_to_change,
 ):
     """
     Test that changing unused parameters doesn't affect the result.
@@ -147,20 +81,20 @@ def test_step_functions_unused_param(
     - Changing 'low' for right step should not affect the result.
     """  # noqa: E501
     utility_functions = {
-        "leftstep": desirability_leftstep.utility_function,
-        "rightstep": desirability_rightstep.utility_function,
+        "leftstep": desirability_utility_function_leftstep,
+        "rightstep": desirability_utility_function_rightstep,
     }
     x, low, high = 1.5, 1.0, 2.0
-    original_result = utility_functions[utility_function](x, low=low, high=high)
+    original_result = utility_functions[name](x, low=low, high=high)
 
     new_params = {"low": low, "high": high, param_to_change: 10.0}
 
-    new_result = utility_functions[utility_function](x, **new_params)
+    new_result = utility_functions[name](x, **new_params)
     assert original_result == new_result
 
 
 @pytest.mark.parametrize(
-    "utility_function, x_values",
+    "name, x_values",
     [
         ("leftstep", [0.5, 1.0, 1.5]),
         ("rightstep", [1.5, 2.0, 2.5]),
@@ -168,10 +102,10 @@ def test_step_functions_unused_param(
     ],
 )
 def test_step_functions_shift_impact(
-    desirability_leftstep,
-    desirability_rightstep,
-    desirability_step,
-    utility_function,
+    desirability_utility_function_leftstep,
+    desirability_utility_function_rightstep,
+    desirability_utility_function_step,
+    name,
     x_values,
 ):
     """
@@ -185,20 +119,16 @@ def test_step_functions_shift_impact(
        c) Values that were 1 with no shift should be scaled towards 1
     """  # noqa: E501
     utility_functions = {
-        "leftstep": desirability_leftstep.utility_function,
-        "rightstep": desirability_rightstep.utility_function,
-        "step": desirability_step.utility_function,
+        "leftstep": desirability_utility_function_leftstep,
+        "rightstep": desirability_utility_function_rightstep,
+        "step": desirability_utility_function_step,
     }
     low, high = 1.0, 2.0
     shift_value = 0.2
 
     for x in x_values:
-        unshifted = utility_functions[utility_function](
-            x, low=low, high=high, shift=0.0
-        )
-        shifted = utility_functions[utility_function](
-            x, low=low, high=high, shift=shift_value
-        )
+        unshifted = utility_functions[name](x, low=low, high=high, shift=0.0)
+        shifted = utility_functions[name](x, low=low, high=high, shift=shift_value)
 
         assert (
             shifted >= shift_value

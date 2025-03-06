@@ -1,150 +1,110 @@
-import numpy as np
 import pytest
+from scipy.stats import gmean
 
 from pumas.aggregation import aggregation_catalogue
-from pumas.aggregation.exceptions import (
-    AggregationNegativeWeightsException,
-    AggregationNullValuesWarning,
-    AggregationNullWeightsWarning,
-    AggregationValuesToWeightLengthMismatchException,
-)
 from pumas.aggregation.weighted_geometric_mean import WeightedGeometricMeanAggregation
+from pumas.uncertainty.uncertainties_wrapper import UFloat, ufloat
 
 
-@pytest.fixture()
+@pytest.fixture
 def aggregation():
     return WeightedGeometricMeanAggregation()
+
+
+@pytest.fixture
+def expected_value_float(dataset_1):
+    values, weights = dataset_1
+    scipy_reference = gmean(a=values, weights=weights)
+    # scipy_reference = 2.0712915860569248
+    return scipy_reference
+
+
+@pytest.fixture
+def expected_result_ufloat():
+    return ufloat(nominal_value=2.07, std_dev=0.09)
+
+
+@pytest.fixture
+def expected_result_float_mask_null_values(dataset_11):
+    values, weights = dataset_11
+    scipy_reference = gmean(a=values, weights=weights)
+    # scipy_reference = 1.9108539016428039
+    return scipy_reference
+
+
+@pytest.fixture
+def expected_result_float_mask_null_weights(dataset_11):
+    values, weights = dataset_11
+    scipy_reference = gmean(a=values, weights=weights)
+    # scipy_reference = 1.9108539016428039
+    return scipy_reference
+
+
+@pytest.fixture
+def expected_result_ufloat_mask_null_values():
+    return ufloat(nominal_value=1.91, std_dev=0.10)
 
 
 def test_aggregation_catalogue():
     assert "geometric_mean" in aggregation_catalogue.list_items()
 
 
-def test_weighted_geometric_mean_nominal_values_without_weights(
-    aggregation, dataset_1, dataset_2, dataset_3, dataset_4
+def test_weighted_geometric_mean_numeric(aggregation, dataset_1, expected_value_float):
+    """Test weighted geometric mean with float values."""
+    values, weights = dataset_1
+    result = aggregation.compute_numeric(values=values, weights=weights)
+    assert isinstance(result, float)
+    assert result == pytest.approx(expected_value_float)
+
+
+def test_weighted_geometric_mean_ufloat(
+    aggregation, dataset_2, expected_value_float, expected_result_ufloat
 ):
-    """Test weighted geometric mean without weights.
-
-    # the reference value is obtained with scipy.stats implementation
-    from scipy.stats import gmean
-    weights = np.ones_like(values)
-    values, weights = dataset_1
-    reference = gmean(a=values, weights=None)
-    """
-
-    reference = 2.358846990158267
-
-    values, weights = dataset_1
-    r = aggregation.compute_score(values=values, weights=np.ones_like(values))
-
-    results = [
-        aggregation.compute_uscore(values, [w / w for w in weights])
-        for values, weights in [dataset_2, dataset_3, dataset_4]
-    ]
-
-    nominal_values = [r.nominal_value for r in results]
-
-    assert r == pytest.approx(reference)
-    for nv in nominal_values:
-        assert nv == pytest.approx(reference)
+    """Test weighted geometric mean with ufloat values."""
+    values, weights = dataset_2
+    result = aggregation.compute_ufloat(values=values, weights=weights)
+    assert isinstance(result, UFloat)
+    assert result.nominal_value == pytest.approx(expected_value_float)  # type: ignore
+    assert str(result) == str(expected_result_ufloat)
 
 
-def test_weighted_geometric_mean_nominal_values_with_weights(
-    aggregation, dataset_1, dataset_2, dataset_3, dataset_4
+def test_weighted_geometric_mean_numeric_masking_null_values(
+    aggregation, dataset_8a, dataset_8b, expected_result_float_mask_null_values
 ):
-    """Test weighted geometric mean with weights.
-
-    # the reference value is obtained with scipy.stats implementation
-    from scipy.stats import gmean
-    values, weights = dataset_1
-    reference = gmean(a=values, weights=weights)
-    """
-
-    reference = 2.0712915860569248
-    values, weights = dataset_1
-
-    r = aggregation.compute_score(values=values, weights=weights)
-
-    results = [
-        aggregation.compute_uscore(values, weights)
-        for values, weights in [dataset_2, dataset_3, dataset_4]
-    ]
-
-    nominal_values = [r.nominal_value for r in results]
-
-    assert r == pytest.approx(reference)
-    for nv in nominal_values:
-        assert nv == pytest.approx(reference)
+    """Test weighted geometric mean numeric masking None or nan values."""
+    for dataset in [dataset_8a, dataset_8b]:
+        values, weights = dataset
+        result = aggregation.compute_numeric(values=values, weights=weights)
+        assert isinstance(result, float)
+        assert result == pytest.approx(expected_result_float_mask_null_values)
 
 
-def test_weighted_geometric_mismatching_lengths(aggregation, dataset_5):
-    values, weights = dataset_5
-
-    with pytest.raises(AggregationValuesToWeightLengthMismatchException):
-        aggregation.compute_score(values, weights)
-
-
-def test_weighted_geometric_mean_negative_weights(aggregation, dataset_6):
-    values, weights = dataset_6
-
-    with pytest.raises(AggregationNegativeWeightsException):
-        aggregation.compute_score(values, weights)
-
-
-def test_weighted_geometric_mean_skips_null_value_or_weight_float(
+def test_weighted_geometric_mean_ufloat_masking_null_values(
     aggregation,
-    dataset_17,
-    dataset_8,
-    dataset_9,
-    dataset_12,
-    dataset_13,
+    dataset_9a,
+    dataset_9b,
+    dataset_9c,
+    dataset_9d,
+    expected_result_float_mask_null_values,
+    expected_result_ufloat_mask_null_values,
 ):
-    values, weights = dataset_17
-    reference_result = aggregation.compute_uscore(values=values, weights=weights)
-    results = []
-    for dataset in [
-        dataset_8,
-        dataset_9,
-    ]:
+    """Test weighted geometric mean ufloat masking None or nan values."""
+    for dataset in [dataset_9a, dataset_9b, dataset_9c, dataset_9d]:
         values, weights = dataset
-        with pytest.warns(AggregationNullValuesWarning):
-            result = aggregation.compute_score(values=values, weights=weights)
-            results.append(result)
-
-    for dataset in [dataset_12, dataset_13]:
-        values, weights = dataset
-        with pytest.warns(AggregationNullWeightsWarning):
-            result = aggregation.compute_score(values=values, weights=weights)
-            results.append(result)
-
-    assert all([r == pytest.approx(reference_result) for r in results])
+        result = aggregation.compute_ufloat(values=values, weights=weights)
+        assert isinstance(result, UFloat)
+        assert result.nominal_value == pytest.approx(  # type: ignore
+            expected_result_float_mask_null_values
+        )
+        assert str(result) == str(expected_result_ufloat_mask_null_values)
 
 
-def test_weighted_geometric_mean_skips_null_value_or_weight_ufloat(
-    aggregation, dataset_16, dataset_10, dataset_11, dataset_14, dataset_15
+def test_weighted_geometric_mean_numeric_masking_null_weights(
+    aggregation, dataset_10a, dataset_10b, expected_result_float_mask_null_weights
 ):
-    values, weights = dataset_16
-    reference_result = aggregation.compute_uscore(values=values, weights=weights)
-
-    results = []
-    for dataset in [
-        dataset_10,
-        dataset_11,
-    ]:
+    """Test weighted geometric mean numeric masking None or nan weights."""
+    for dataset in [dataset_10a, dataset_10b]:
         values, weights = dataset
-        with pytest.warns(AggregationNullValuesWarning):
-            result = aggregation.compute_uscore(values=values, weights=weights)
-            results.append(result)
-
-    for dataset in [dataset_14, dataset_15]:
-        values, weights = dataset
-        with pytest.warns(AggregationNullWeightsWarning):
-            result = aggregation.compute_uscore(values=values, weights=weights)
-            results.append(result)
-
-    assert all(
-        [
-            r.nominal_value == pytest.approx(reference_result.nominal_value)
-            for r in results
-        ]
-    )
+        result = aggregation.compute_numeric(values=values, weights=weights)
+        assert isinstance(result, float)
+        assert result == pytest.approx(expected_result_float_mask_null_weights)

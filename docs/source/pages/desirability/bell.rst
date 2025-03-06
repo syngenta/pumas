@@ -6,10 +6,6 @@ High-level Class interface
 .. autoclass:: pumas.desirability.bell.Bell
     :noindex:
 
-Low-level Utility Function
-----------------------------
-.. autofunction:: pumas.desirability.bell.bell
-    :noindex:
 
 Parameter Analysis
 ---------------------

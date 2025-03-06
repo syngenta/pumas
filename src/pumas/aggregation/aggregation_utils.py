@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 from pumas.aggregation.exceptions import (
     AggregationNegativeValuesException,
@@ -16,14 +16,15 @@ from pumas.aggregation.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-def is_nan_none(item: Any):
+def is_nan_none(item: Any) -> bool:
     if item is None:
         return True
     if "nan" in str(item):
         return True
+    return False
 
 
-def warn_and_log(message, category=Warning):
+def warn_and_log(message: str, category: Any = Warning) -> None:
     """Send a warning message and log it.
 
     Args:
@@ -35,7 +36,7 @@ def warn_and_log(message, category=Warning):
     logging.warning(message)
 
 
-def check_length_match(values: List, weights: List):
+def check_length_match(values: List[Any], weights: List[Any]) -> None:
     """Check if the length of the 'values' and 'weights' arrays match.
 
     Args:
@@ -53,7 +54,7 @@ def check_length_match(values: List, weights: List):
         )
 
 
-def check_negative_values(values: List):
+def check_negative_values(values: List[Any]) -> None:
     """Check if any value is negative in the 'values' array.
 
     Args:
@@ -67,7 +68,7 @@ def check_negative_values(values: List):
         raise AggregationNegativeValuesException("All values must be positive.")
 
 
-def check_negative_weights(weights: List):
+def check_negative_weights(weights: List[Any]) -> None:
     """Check if any weight is negative in the 'weights' array.
 
     Args:
@@ -81,7 +82,7 @@ def check_negative_weights(weights: List):
         raise AggregationNegativeWeightsException("All values must be positive.")
 
 
-def check_null_weights(weights: List):
+def check_null_weights(weights: List[Any]) -> None:
     """Check for null or NaN weights in the 'weights' array.
 
     Args:
@@ -95,7 +96,7 @@ def check_null_weights(weights: List):
         raise AggregationNullWeightsException("All weights must be non-zero.")
 
 
-def check_null_values(values: List):
+def check_null_values(values: List[Any]) -> None:
     """Check for null or NaN values in the 'values' array.
 
     Args:
@@ -109,7 +110,7 @@ def check_null_values(values: List):
         raise AggregationNullValuesException("None or NaN values are not allowed.")
 
 
-def report_null_values(values: List):
+def report_null_values(values: List[Any]) -> None:
     """Report null or NaN values in the 'values' array using a warning.
 
     Args:
@@ -123,7 +124,7 @@ def report_null_values(values: List):
         )
 
 
-def report_null_weights(weights: List):
+def report_null_weights(weights: List[Any]) -> None:
     """Report null or NaN values in the 'weights' array using a warning.
 
     Args:
@@ -138,8 +139,8 @@ def report_null_weights(weights: List):
 
 
 def filter_out_null_values_weights_pairs(
-    values: List, weights: List
-) -> Tuple[List, List]:
+    values: List[Any], weights: List[Any]
+) -> Tuple[List[Any], List[Any]]:
     """Filter out (value, weight) pairs if either value or weight is  null or NaN .
 
     Args:
@@ -168,7 +169,25 @@ def filter_out_null_values_weights_pairs(
     return selected_values, selected_weights
 
 
-def run_data_validation_pipeline(values, weights):
+def fill_weights(values: List[Any], weights: Optional[List[Any]]) -> List[Any]:
+    """Fill weights with 1.0 if not provided.
+
+    Args:
+        values (List): The values to be aggregated.
+        weights (List): The weights corresponding to the values.
+
+    Returns:
+        List: The weights array with 1.0 for missing weights.
+
+    """
+    if weights is None:
+        weights = [1.0] * len(values)
+    return weights
+
+
+def run_data_validation_pipeline(
+    values: List[Any], weights: Optional[List[Any]]
+) -> Tuple[List[Any], List[Any]]:
     """Run the data_frame validation pipeline on 'values' and 'weights'.
 
     Data validation includes checking the length match, reporting null
@@ -182,6 +201,7 @@ def run_data_validation_pipeline(values, weights):
         List, List: Validated and possibly filtered 'values' and 'weights'.
 
     """
+    weights = fill_weights(values=values, weights=weights)
     check_length_match(values=values, weights=weights)
     report_null_values(values=values)
     report_null_weights(weights=weights)

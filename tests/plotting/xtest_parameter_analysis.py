@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 
 from pumas.plotting.plotter import MATPLOTLIB_AVAILABLE, plot_parameter_analysis

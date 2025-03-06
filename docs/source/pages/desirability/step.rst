@@ -5,9 +5,6 @@ High-level Class interface
 ----------------------------
 
 
-Low-level Utility Function
-----------------------------
-
 
 Parameter Analysis (LeftStep)
 -----------------------------

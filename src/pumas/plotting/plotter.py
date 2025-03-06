@@ -1,3 +1,4 @@
+# type: ignore
 from typing import cast
 
 import numpy as np
@@ -14,7 +15,7 @@ except ImportError:
 
 
 def plot_subplot(
-    func,
+    desirability_class,
     ax: Axes,
     x_values,
     param_cases,
@@ -34,7 +35,7 @@ def plot_subplot(
     # Plot reference
     if plot_reference:
         y_values_ref = np.array(
-            [func(x=xi, **reference_coefficient_parameters) for xi in x_values]
+            [desirability_class(params=reference_coefficient_parameters).compute_numeric(x=xi) for xi in x_values]
         )
         ref_def = f"Ref.: ({param_name}={reference_coefficient_parameters[param_name]})"
 
@@ -52,7 +53,7 @@ def plot_subplot(
         coefficient_parameters = reference_coefficient_parameters.copy()
         coefficient_parameters[param_name] = param_value
 
-        y_values = np.array([func(x=xi, **coefficient_parameters) for xi in x_values])
+        y_values = np.array([desirability_class(params=coefficient_parameters).compute_numeric(x=xi) for xi in x_values])
         ax.plot(x_values, y_values, label=f"{param_name}={param_value}", linewidth=4)
 
     # Plot points
@@ -73,7 +74,7 @@ def plot_subplot(
 
 
 def plot_parameter_analysis(
-    func: callable,
+    desirability_class,
     parameters: list,
     reference_coefficient_parameters: dict,
     vertical_lines_x_values: list[float] = None,
@@ -106,7 +107,7 @@ def plot_parameter_analysis(
         title = f"({alphabet[i]}) {param['title']}"
         current_ax = cast(Axes, axs[row, col] if nrows > 1 else axs[col])
         plot_subplot(
-            func=func,
+            desirability_class,
             ax=current_ax,
             x_values=x_values,
             param_cases=param["values"],

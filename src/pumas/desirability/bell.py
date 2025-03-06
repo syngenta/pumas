@@ -1,60 +1,29 @@
 import math
 import sys
+from functools import partial
+from types import ModuleType
+from typing import Any, Dict, Optional, Union
 
 from pumas.desirability.base_models import Desirability
+from pumas.uncertainty.uncertainties_wrapper import UFloat, umath
 
 
 def bell(
-    x: float,
+    x: Union[float, UFloat],
     width: float,
     slope: float,
     center: float,
     invert: bool = False,
     shift: float = 0.0,
-) -> float:
-    """
-    Utility function to calculate the membership degree of `x` in a general bell-shaped fuzzy membership function.
-
-    The bell-shaped membership function is defined by three parameters: `width`, `slope`, and `center`,
-    where `width` controls the width (parameter 'a'), `slope` is a slope parameter (parameter 'b'),
-    and `center` is the center of the curve (parameter 'c'). An additional parameter `shift` vertically
-    displaces the curve.
-
-    The mathematical representation of the bell-shaped function including an upward shift is as follows:
-
-    .. math::
-
-        f(x) = \\frac{1}{1 + |\\frac{x - center}{width}|^{2 * slope}} * (1 - shift) + shift
-
-    Args:
-        x (float): The input value for which the membership degree is to be calculated.
-        width (float): The width parameter of the bell curve, controls the horizontal spread (width > 0).
-        slope (float): The slope parameter of the bell curve, controls the steepness of the curve's sides.
-        center (float): The center of the bell curve, indicates the `x` value at the highest point of the curve (peak).
-        invert (bool): If True, the curve is inverted, i.e., the membership degree decreases as `x` approaches the center.
-        shift (float): The vertical shift applied to the entire curve, ranging from 0 (no shift) to 1 (maximum shift).
-
-    Returns:
-        float: The membership degree of `x` within the bell-shaped fuzzy set, adjusted by specified `shift`.
-
-    Raises:
-        ValueError: If `width` is not greater than 0, as a non-positive width does not define a bell-shaped curve.
-    """  # noqa: E501
-    if not 0 <= shift <= 1:
-        raise ValueError("The 'shift' parameter must be between 0 and 1, inclusive.")
-
-    if width <= 0:
-        raise ValueError("The 'width' parameter must be greater than 0.")
-
-    if abs(width) < sys.float_info.epsilon:
-        raise ValueError(
-            "Width is too close to zero, which may cause numerical instability."
-        )
+    math_module: ModuleType = math,
+) -> Union[float, UFloat]:
 
     exponent = 2 * abs(slope)
-    base = abs((x - center) / width)
+    base = abs((x - center) / width)  # type: ignore
 
-    if base > 1 and exponent > math.log(sys.float_info.max) / math.log(base):
+    if base > 1 and exponent > math_module.log(sys.float_info.max) / math_module.log(
+        base
+    ):
         return shift
 
     result = 1 / (1 + base**exponent)
@@ -66,7 +35,12 @@ def bell(
     # Apply the shift
     result = result * (1 - shift) + shift
 
-    return result
+    return result  # type: ignore
+
+
+compute_numeric_bell = partial(bell, math_module=math)
+
+compute_ufloat_bell = partial(bell, math_module=umath)
 
 
 def get_bell_inflection_points(
@@ -123,57 +97,128 @@ def get_bell_slope_pivot_points(
 
 class Bell(Desirability):
     """
-    The class :class:`SigmoidDesirability<mpstk.desirability.desirability.GeneralizedBellMembershipDesirability>` implements a bell-shaped desirability function.
+    Bell desirability function implementation as a membership degree of `x` in a general bell-shaped fuzzy membership function.
 
-    It implements the definition of input and coefficient parameters.
+    The bell-shaped membership function is defined by three parameters: `width`, `slope`, and `center`,
+    where `width` controls the width (parameter 'a'), `slope` is a slope parameter (parameter 'b'),
+    and `center` is the center of the curve (parameter 'c'). An additional parameter `shift` vertically
+    displaces the curve.
 
-    This class wraps the general_bell_membership utility function and implements the interface to use it, identifying
-        * input parameters: 'x'
-        * coefficient parameters: 'width', 'slope', 'center', 'invert', and 'shift'.
+    The mathematical representation of the bell-shaped function including an upward shift is as follows:
 
-    The bell-shaped function has a smooth and adjustable curve that is controlled by its parameters
-    and can be used to model scenarios where desirability achieves a peak at a certain value and decreases smoothly.
+    .. math::
 
-    Upon initialization, the attributes of the coefficient parameters are set to
-    reasonable defaults, which can be changed by the user.
+        f(x) = \\frac{1}{1 + |\\frac{x - center}{width}|^{2 * slope}} * (1 - shift) + shift
+
+    Where:
+        * `x` is the input value.
+        * `width` is the width parameter of the bell curve, controls the horizontal spread (width > 0).
+        * `slope` is the slope parameter of the bell curve, controls the steepness of the curve's sides.
+        * `center` is the center of the bell curve, indicates the `x` value at the highest point of the curve (peak).
+        * `invert` is a boolean parameter that, if True, inverts the curve.
+        * `shift` is the vertical shift applied to the entire curve, ranging from 0 (no shift) to 1 (maximum shift).
+
+
+    Args:
+        params (Optional[Dict[str, Any]], optional): Initial parameters for the bell function.
+            Defaults to None.
+
+    The bell function parameters are:
+        - width (float): The width parameter of the bell curve, controls the horizontal spread (width > 0).
+        - slope (float): The slope parameter of the bell curve, controls the steepness of the curve's sides.
+        - center (float): The center of the bell curve, indicates the `x` value at the highest point of the curve (peak).
+        - invert (bool): If True, the curve is inverted, i.e., the membership degree decreases as `x` approaches the center.
+        - shift (float): The vertical shift applied to the entire curve, ranging from 0 (no shift) to 1 (maximum shift).
 
     Usage Example:
 
-    >>> desirability = Bell()
-    >>> # print the default values of the coefficient parameters
-    >>> print(desirability.get_coefficient_parameters_values())
-    {'width': None, 'slope': 1.0, 'center': None, invert: False, 'shift': 0.0}
-    >>> desirability.set_coefficient_parameters_values({'width': 1.0, 'slope': 2.0,
-    ...                                                 'center': 0.5, 'invert': False,
-    ...                                                 'shift': 0.0})
-    >>> print(desirability.get_coefficient_parameters_values())
-    {'width': 1.0, 'slope': 2.0, 'center': 0.5, invert: False, 'shift': 0.0}
-    >>> result = desirability.compute_score(x=0.5)
+    >>> from pumas.desirability import desirability_catalogue
+
+    >>> desirability_class = desirability_catalogue.get("bell")
+
+    >>> params = {'center': 0.5, 'width': 1.0, 'slope': 2.0, 'invert': False, 'shift': 0.0}
+    >>> desirability = desirability_class(params=params)
+    >>> print(desirability.get_parameters_values())
+    {'center': 0.5, 'width': 1.0, 'slope': 2.0, 'invert': False, 'shift': 0.0}
+
+    >>> result = desirability.compute_numeric(x=0.5)
+    >>> print(f"{result:.2f}")
+    1.00
+
+    >>> result = desirability(x=0.5) # Same as compute_numeric
+    >>> print(f"{result:.2f}")
+    1.00
+
+    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> result = desirability.compute_ufloat(x=ufloat(0.5, 0.1))
     >>> print(result)
-    1.0
+    1.0+/-0
     """  # noqa: E501
 
-    def __init__(self):
-        """Initializes the BellDesirability with predefined parameter names
-        and the general_bell_membership utility function.
-        """
-        super().__init__(
-            utility_function=bell,
-            coefficient_parameters_names=[
-                "width",
-                "slope",
-                "center",
-                "invert",
-                "shift",
-            ],
-            input_parameters_names=["x"],
+    def __init__(self, params: Optional[Dict[str, Any]] = None):
+        super().__init__()
+        self._set_parameter_definitions(
+            {
+                "center": {
+                    "type": "float",
+                    "min": float("-inf"),
+                    "max": float("inf"),
+                    "default": None,
+                },
+                "width": {
+                    "type": "float",
+                    "min": sys.float_info.epsilon,
+                    "max": float("inf"),
+                    "default": None,
+                },
+                "slope": {
+                    "type": "float",
+                    "min": 0.0,
+                    "max": float("inf"),
+                    "default": 1.0,
+                },
+                "invert": {"type": "bool", "default": False},
+                "shift": {"type": "float", "min": 0.0, "max": 1.0, "default": 0.0},
+            }
         )
-        # Set defaults and boundaries for the parameters:
-        attributes_change_map = {
-            "width": {"min": sys.float_info.epsilon, "max": None, "default": None},
-            "slope": {"min": 1.0, "max": None, "default": 1.0},
-            "center": {"min": None, "max": None, "default": None},
-            "invert": {"default": False},
-            "shift": {"min": 0.0, "max": 1.0, "default": 0.0},
-        }
-        self.set_coefficient_parameters_attributes(attributes_map=attributes_change_map)
+        self._validate_and_set_parameters(params)
+
+    def compute_numeric(self, x: float) -> float:
+        """
+        Compute the bell desirability for a numeric input.
+
+        Args:
+            x (float): The input value.
+
+        Returns:
+            float: The computed desirability value.
+
+        Raises:
+            InvalidParameterTypeError: If the input is not a float.
+            ParameterValueNotSet: If any required parameter is not set.
+        """
+        self._validate_input(x, float)
+        self._check_coefficient_parameters_values()
+        parameters = self.get_parameters_values()
+        return compute_numeric_bell(x, **parameters)  # type: ignore
+
+    def compute_ufloat(self, x: UFloat) -> UFloat:
+        """
+        Compute the bell desirability for an uncertain float input.
+
+        Args:
+            x (UFloat): The uncertain float input value.
+
+        Returns:
+            UFloat: The computed desirability value with uncertainty.
+
+        Raises:
+            InvalidParameterTypeError: If the input is not a UFloat.
+            ParameterValueNotSet: If any required parameter is not set.
+        """
+        self._validate_input(x, UFloat)
+        self._check_coefficient_parameters_values()
+        parameters = self.get_parameters_values()
+        return compute_ufloat_bell(x, **parameters)  # type: ignore
+
+    __call__ = compute_numeric

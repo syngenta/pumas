@@ -2,14 +2,12 @@ import math
 
 import pytest
 
-from pumas.desirability import desirability_catalogue
+from pumas.desirability.value_mapping import value_mapping
 
 
 @pytest.fixture
-def utility_function():
-    desirability_class = desirability_catalogue.get("value_mapping")
-    desirability_instance = desirability_class()
-    return desirability_instance.utility_function
+def desirability_utility_function():
+    return value_mapping
 
 
 @pytest.mark.parametrize(
@@ -25,30 +23,18 @@ def utility_function():
         ({"Extremely Low": 0.2, "Extremely High": 0.5}, "Extremely Low", 0.2),
     ],
 )
-def test_value_mapping(utility_function, mapping, x, expected):
-    result = utility_function(x=x, mapping=mapping)
+def test_value_mapping(desirability_utility_function, mapping, x, expected):
+    params = {"mapping": mapping, "shift": 0.0}
+    result = desirability_utility_function(x=x, **params)
     assert math.isclose(result, expected, rel_tol=1e-9, abs_tol=1e-9)
 
 
-@pytest.mark.parametrize(
-    "shift, error_type, error_msg",
-    [
-        (-0.1, ValueError, "Shift must be between 0 and 1"),
-        (1.1, ValueError, "Shift must be between 0 and 1"),
-    ],
-)
-def test_value_mapping_wrong_shift(utility_function, shift, error_type, error_msg):
-    x = "Low"
-    mapping = {"Low": 0.2, "Medium": 0.5, "High": 0.8}
-    with pytest.raises(error_type, match=error_msg):
-        utility_function(x, mapping, shift=shift)
-
-
-def test_value_mapping_invalid_value(utility_function):
+def test_value_mapping_invalid_value(desirability_utility_function):
     x = "Very High"
     mapping = {"Low": 0.2, "Medium": 0.5, "High": 0.8}
+    params = {"mapping": mapping, "shift": 0.0}
 
-    y = utility_function(x, mapping)
+    y = desirability_utility_function(x=x, **params)
     assert math.isnan(y), f"Expected NaN, but got {y}"
 
 
@@ -59,20 +45,22 @@ def test_value_mapping_invalid_value(utility_function):
         {"Low": -0.1, "Medium": 0.5, "High": 1.0},
     ],
 )
-def test_invalid_mapping_values(utility_function, mapping):
+def test_invalid_mapping_values(desirability_utility_function, mapping):
     x = "Low"
+    params = {"mapping": mapping, "shift": 0.0}
     with pytest.raises(ValueError, match="Mapping values should be between 0 and 1"):
-        utility_function(x, mapping)
+        desirability_utility_function(x=x, **params)
 
 
 # test the effect of shift on the utility function
 @pytest.mark.parametrize("mapping", [{"Low": 0.1, "Medium": 0.5, "High": 0.8}])
-def test_value_mapping_shift(utility_function, mapping):
+def test_value_mapping_shift(desirability_utility_function, mapping):
     shift_value = 0.2
     x_range = list(mapping.keys())
 
     # Calculate reference values
-    reference_values = [utility_function(x, mapping, shift=0.0) for x in x_range]
+    params = {"mapping": mapping, "shift": 0.0}
+    reference_values = [desirability_utility_function(x=x, **params) for x in x_range]
 
     # Verify that there are unshifted values below the shift value
     assert any(
@@ -80,7 +68,8 @@ def test_value_mapping_shift(utility_function, mapping):
     ), "No unshifted values below shift value"
 
     # Calculate shifted values
-    shifted_values = [utility_function(x, mapping, shift=shift_value) for x in x_range]
+    params = {"mapping": mapping, "shift": shift_value}
+    shifted_values = [desirability_utility_function(x=x, **params) for x in x_range]
 
     # Verify properties of shifted values
     for unshifted, shifted in zip(reference_values, shifted_values):

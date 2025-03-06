@@ -24,14 +24,14 @@ Class Diagram
             parameter_manager ParameterManager
             coefficient_parameters_names List[str]
             input_parameters_names List[str]
-            get_coefficient_parameters_values() Dict[str, Any]
-            set_coefficient_parameters_values(Dict[str, Any])
+            get_parameters_values() Dict[str, Any]
+            set_parameters_values(Dict[str, Any])
 
         }
 
         class  BaseAggregation {
-         +compute_score(values[float], weights[float]): float
-         +compute_uscore(values[ufloat], weights[float]): UFloat
+         +compute_numeric(values[float], weights[float]): float
+         +compute_ufloat(values[ufloat], weights[float]): UFloat
         }
 
         class WeightedArithmeticMeanAggregation

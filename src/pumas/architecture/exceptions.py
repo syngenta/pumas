@@ -53,3 +53,11 @@ class ParameterDefinitionError(Exception):
 
 class InvalidParameterValueError(Exception):
     pass
+
+
+class ParameterNotFoundError(Exception):
+    pass
+
+
+class InvalidParameterAttributeError(Exception):
+    pass

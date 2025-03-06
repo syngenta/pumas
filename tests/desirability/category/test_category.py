@@ -1,3 +1,4 @@
+# type: ignore
 from math import isclose
 
 import pytest
@@ -100,8 +101,10 @@ def test_category_manager_valid_categories():
         ([("Extremely Low", 0.0), ("Extremely High", 1.0)], "Extremely High", 1.0),
     ],
 )
-def test_category_function(categories_list, x, expected):
-    assert category(x, categories_list) == expected
+def test_category_function(x, categories_list, expected):
+    params = {"categories": categories_list, "shift": 0.0}
+
+    assert category(x=x, **params) == expected
 
 
 def test_category_function_invalid_input():
@@ -110,32 +113,24 @@ def test_category_function_invalid_input():
     with pytest.raises(
         ValueError, match="Category 'Very High' not found in provided categories"
     ):
-        category(x="Very High", categories=categories_list)
+        category(x="Very High", categories=categories_list, shift=0.0)
     # Test that an invalid category (case mismatch) raises a ValueError
     with pytest.raises(
         ValueError, match="Category 'LOW' not found in provided categories"
     ):
-        category(x="LOW", categories=categories_list)
+        category(x="LOW", categories=categories_list, shift=0.0)
 
 
-def test_category_results_compute_score():
+def test_category_results_compute_string():
     desirability_class = desirability_catalogue.get("category")
-    desirability_instance = desirability_class()
-    desirability_instance.set_coefficient_parameters_values(
-        {"categories": [("Low", 0.2), ("Medium", 0.5), ("High", 0.8)]}
-    )
-    result = desirability_instance.compute_score(x="Medium")
+    params = {
+        "categories": [("Low", 0.2), ("Medium", 0.5), ("High", 0.8)],
+        "shift": 0.0,
+    }
+    desirability_instance = desirability_class(params=params)
+
+    result = desirability_instance.compute_string(x="Medium")
     assert result == pytest.approx(expected=0.5)
-
-
-def test_category_results_compute_uscore():
-    desirability_class = desirability_catalogue.get("category")
-    desirability_instance = desirability_class()
-    desirability_instance.set_coefficient_parameters_values(
-        {"categories": [("Low", 0.2), ("Medium", 0.5), ("High", 0.8)]}
-    )
-    result = desirability_instance.compute_score(x="High")
-    assert result == pytest.approx(expected=0.8)
 
 
 def test_category_invalid_value():

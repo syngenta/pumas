@@ -1,3 +1,4 @@
+# type: ignore
 """Map category names to float score"""
 
 __all__ = ["ValueMapping"]

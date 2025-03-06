@@ -75,6 +75,8 @@ def test_decorator_registration():
     class DecoratedItem(MockItem):
         pass
 
+    _ = DecoratedItem()
+
     assert "decorated_item" in catalogue.list_items()
 
 
@@ -93,6 +95,8 @@ def test_register_non_subclass():
         @catalogue.register_decorator("non_subclass_item")
         class NonSubclassItem(UnrelatedClass):
             pass
+
+        _ = NonSubclassItem()
 
     assert "Provided class is not a subclass of MockItem" in str(exc_info.value)
 

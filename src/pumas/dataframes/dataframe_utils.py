@@ -41,7 +41,10 @@ def concat(
 
 def _concat_rows(dataframes: List[DataFrame], join: str) -> DataFrame:
     if join == "inner":
+        """
+        TODO: this code stub has to be reviewed
         common_columns = set.intersection(*(set(df.columns) for df in dataframes))
+        """
         raise NotImplementedError("Inner join not implemented yet")
     else:
         common_columns = set.union(*(set(df.columns) for df in dataframes))
@@ -60,15 +63,21 @@ def _concat_rows(dataframes: List[DataFrame], join: str) -> DataFrame:
 
 
 def _concat_columns(dataframes: List[DataFrame], join: str) -> DataFrame:
+    # Get index values as sets of Hashable
+    index_sets = (set(df.index.values) for df in dataframes)
+
+    # Perform set operation based on join type
     if join == "inner":
-        common_indices = set.intersection(*(set(df.index.values) for df in dataframes))
+        common_indices = set.intersection(*index_sets)
         raise NotImplementedError("Inner join not implemented yet")
     else:
-        common_indices = set.union(*(set(df.index.values) for df in dataframes))
+        common_indices = set.union(*index_sets)
 
-    common_indices = sorted(common_indices)
+    # Convert to sequence for sorting and further use
+    common_indices_sequence = sorted(common_indices)
+
     concatenated_row_data = []
-    for idx in common_indices:
+    for idx in common_indices_sequence:
         concatenated_row = {}
         for df in dataframes:
             if idx in df.index.values:
@@ -79,5 +88,5 @@ def _concat_columns(dataframes: List[DataFrame], join: str) -> DataFrame:
         concatenated_row_data.append(concatenated_row)
 
     concatenated_df = DataFrame(row_data=concatenated_row_data)
-    concatenated_df._index = Index(common_indices)
+    concatenated_df._index = Index(list(common_indices_sequence))
     return concatenated_df

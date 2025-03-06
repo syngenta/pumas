@@ -67,6 +67,7 @@ True
 """
 
 import inspect
+from typing import Any, List
 
 
 class Catalogue:
@@ -99,7 +100,7 @@ class Catalogue:
         self._items = {}
         self._item_type = item_type
 
-    def register(self, name: str, item):
+    def register(self, name: str, item: Any) -> None:
         """
         Registers a new item with the given name in the catalogue.
         If the item is a class, it checks if it's a
@@ -148,7 +149,7 @@ class Catalogue:
             raise ValueError(f"Item '{name}' does not exist.")
         del self._items[name]
 
-    def get(self, name: str):
+    def get(self, name: str) -> Any:
         """
         Retrieves an item by its name from the catalogue.
 
@@ -165,7 +166,7 @@ class Catalogue:
             raise ValueError(f"Item '{name}' does not exist.")
         return self._items.get(name)
 
-    def list_items(self) -> list:
+    def list_items(self) -> List[Any]:
         """
         Lists all registered item names in the catalogue.
 
@@ -174,7 +175,7 @@ class Catalogue:
         """
         return list(self._items.keys())
 
-    def register_decorator(self, name: str):
+    def register_decorator(self, name: str) -> Any:
         """
         Provides a decorator for registering items in the catalogue.
         It facilitates the registration of classes
@@ -193,27 +194,3 @@ class Catalogue:
             return item
 
         return decorator
-
-    def register_factory(self, name: str, factory_method):
-        """
-        Registers a new factory method with the given name in the catalogue.
-        The factory method should return an instance of the specified item type.
-
-        Args:
-            name (str): The name to register the factory method under.
-            factory_method (Callable): The factory method to be registered.
-
-        Raises:
-            TypeError: If the factory method does not return an instance
-                of the specified item type.
-        """
-
-        # Example instance to check the type
-        example_instance = factory_method()
-        if not isinstance(example_instance, self._item_type):
-            raise TypeError(
-                f"The factory method does not return an instance "
-                f"of {self._item_type.__name__}."
-            )
-
-        self._items[name] = factory_method

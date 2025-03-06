@@ -1,167 +1,243 @@
+from typing import Any, Dict
+
 import pytest
 
-from pumas.architecture.exceptions import ParameterUpdateAttributeWarning
-from pumas.architecture.parameters import FloatParameter, IntParameter, ParameterManager
+from pumas.architecture.exceptions import (
+    InvalidParameterAttributeError,
+    ParameterDefinitionError,
+    ParameterNotFoundError,
+    ParameterUpdateAttributeWarning,
+)
+from pumas.architecture.parameters import (
+    BoolParameter,
+    FloatParameter,
+    IntParameter,
+    ParameterManager,
+    StrParameter,
+)
 
 
-def test_initialization_with_valid_function():
-    """Test that the ParameterManager correctly
-    initializes with a well-annotated function."""
+def test_parameter_manager_initialization():
+    """Test that ParameterManager correctly initializes
+    with valid parameter definitions."""
+    param_defs: Dict[str, Dict[str, Any]] = {
+        "int_param": {"type": "int", "default": 5, "min": 0, "max": 10},
+        "float_param": {"type": "float", "default": 3.14, "min": 0.0, "max": 10.0},
+        "str_param": {
+            "type": "str",
+            "default": "test",
+            "accepted_values": ["test", "example"],
+        },
+        "bool_param": {"type": "bool", "default": True},
+    }
+    pm = ParameterManager(param_defs)
 
-    def func(x: int, y: float):
-        return x + y
-
-    pm = ParameterManager(input_function=func)
-    assert "x" in pm.parameters_map and isinstance(pm.parameters_map["x"], IntParameter)
-    assert "y" in pm.parameters_map and isinstance(
-        pm.parameters_map["y"], FloatParameter
-    )
-
-
-def test_check_input_function_with_non_callable():
-    """Test that the ParameterManager raises a
-    ValueError if the input_function is not callable."""
-    with pytest.raises(ValueError):
-        ParameterManager(input_function="not callable")  # noqa type mismatch on purpose
-
-
-def test_get_type_names_with_valid_types():
-    """Test that the _get_type_names method correctly
-    maps parameter names to their type names."""
-
-    def func(x: int, y: float):
-        return x + y
-
-    pm = ParameterManager(input_function=func)
-    type_names = pm._get_type_names()
-    assert type_names == {"x": "int", "y": "float"}
+    assert isinstance(pm.parameters_map["int_param"], IntParameter)
+    assert isinstance(pm.parameters_map["float_param"], FloatParameter)
+    assert isinstance(pm.parameters_map["str_param"], StrParameter)
+    assert isinstance(pm.parameters_map["bool_param"], BoolParameter)
 
 
-def test_validate_function_parameters_with_unregistered_type():
-    """Test that ParameterManager raises
-    a ValueError for parameters with unregistered types."""
-
-    class UnknownType:
-        pass
-
-    def func(
-        x: UnknownType,
+def test_parameter_manager_invalid_type():
+    """Test that ParameterManager raises a ParameterDefinitionError
+    when given an invalid parameter type."""
+    param_defs = {"invalid_param": {"type": "invalid_type"}}
+    with pytest.raises(
+        ParameterDefinitionError,
+        match="No Parameter class registered for type 'invalid_type'",
     ):
-        return x
-
-    with pytest.raises(ValueError):
-        ParameterManager(input_function=func)
+        ParameterManager(param_defs)
 
 
-def test_get_parameters_map_with_default_values():
-    """Test that default values are correctly
-    assigned to Parameter instances in the map."""
-
-    def func(x: int = 42, y: float = 3.14):
-        return x + y
-
-    pm = ParameterManager(input_function=func)
-    assert pm.parameters_map["x"].default == 42
-    assert pm.parameters_map["y"].default == pytest.approx(3.14)
-
-
-def test_set_parameter_attributes_valid_update():
-    """Test updating parameter attributes while
-    preserving the old ones that are not overridden."""
-
-    def func(x: int = 42):
-        return x
-
-    pm = ParameterManager(input_function=func)
-    pm.set_parameter_attributes("x", {"min": 1, "max": 100})
-    assert pm.parameters_map["x"].min == 1
-    assert pm.parameters_map["x"].max == 100
-    assert pm.parameters_map["x"].default == 42  # Default should stay unchanged
+def test_parameter_manager_missing_type():
+    """Test that ParameterManager raises a ParameterDefinitionError
+    when a parameter definition is missing the 'type'
+    key."""
+    param_defs = {"missing_type_param": {"default": 5}}
+    with pytest.raises(
+        ParameterDefinitionError,
+        match="Parameter 'missing_type_param' is missing a type definition",
+    ):
+        ParameterManager(param_defs)
 
 
-def test_set_parameter_attributes_non_existing_parameter():
-    """Test that a ValueError is raised when updating a non-existing parameter."""
+def test_set_parameter_value():
+    """Test that set_parameter_value correctly updates the value of a parameter."""
+    param_defs = {"int_param": {"type": "int", "default": 5, "min": 0, "max": 10}}
+    pm = ParameterManager(param_defs)
 
-    def func(x: int = 42):
-        return x
-
-    pm = ParameterManager(input_function=func)
-    with pytest.raises(ValueError):
-        pm.set_parameter_attributes("y", {"min": 0})
+    pm.set_parameter_value("int_param", 7)
+    assert pm.parameters_map["int_param"].value == 7
 
 
-def test_set_parameter_attributes_with_value_update_attempt():
-    """Test that updating the 'value'
-    property raises a ParameterUpdateAttributeWarning."""
+def test_set_parameter_value_invalid():
+    """Test that set_parameter_value raises an InvalidParameterAttributeError
+    when setting an invalid value."""
+    param_defs = {"int_param": {"type": "int", "default": 5, "min": 0, "max": 10}}
+    pm = ParameterManager(param_defs)
 
-    def func(x: int = 42):
-        return x
-
-    pm = ParameterManager(input_function=func)
-    with pytest.warns(ParameterUpdateAttributeWarning):
-        pm.set_parameter_attributes("x", {"value": 100})
+    with pytest.raises(
+        InvalidParameterAttributeError, match="Invalid value for parameter 'int_param'"
+    ):
+        pm.set_parameter_value("int_param", 15)
 
 
-def test_set_parameter_value_valid_assignment():
-    """Test that the set_parameter_value
-    method correctly sets the value of a parameter."""
+def test_set_parameter_value_nonexistent():
+    """Test that set_parameter_value raises a ParameterNotFoundError
+    when trying to set a value for a non-existent parameter."""
+    param_defs = {"int_param": {"type": "int", "default": 5}}
+    pm = ParameterManager(param_defs)
 
-    def func(x: int = 42):
-        return x
+    with pytest.raises(
+        ParameterNotFoundError, match="Parameter 'nonexistent_param' does not exist"
+    ):
+        pm.set_parameter_value("nonexistent_param", 10)
 
-    pm = ParameterManager(input_function=func)
-    pm.set_parameter_value("x", 24)
+
+def test_set_parameter_attributes():
+    """Test that set_parameter_attributes correctly updates
+    the attributes of a parameter."""
+    param_defs = {"int_param": {"type": "int", "default": 5, "min": 0, "max": 10}}
+    pm = ParameterManager(param_defs)
+
+    pm.set_parameter_attributes("int_param", {"min": -5, "max": 15})
+
+    param = pm.parameters_map["int_param"]
+    if isinstance(param, IntParameter):
+        assert param.min == -5
+        assert param.max == 15
+    else:
+        pytest.fail("Expected IntParameter")
+
+
+def test_set_parameter_attributes_nonexistent():
+    """Test that set_parameter_attributes raises a ParameterNotFoundError
+    when trying to update attributes of a non-existent parameter."""
+    param_defs = {"int_param": {"type": "int", "default": 5}}
+    pm = ParameterManager(param_defs)
+
+    with pytest.raises(
+        ParameterNotFoundError, match="Parameter 'nonexistent_param' does not exist"
+    ):
+        pm.set_parameter_attributes(name="nonexistent_param", attributes={"min": 0})
+
+
+def test_set_parameter_attributes_value_ignored():
+    """Test that set_parameter_attributes ignores
+    attempts to update the 'value' attribute and raises a warning."""
+    param_defs = {"int_param": {"type": "int", "default": 5, "min": 0}}
+    pm = ParameterManager(param_defs)
+
+    with pytest.warns(ParameterUpdateAttributeWarning) as warning_info:
+        pm.set_parameter_attributes("int_param", {"value": 10, "min": 0})
+
+    assert len(warning_info) == 1
     assert (
-        pm.parameters_map["x"].value == 24
-    )  # The value attribute of x should now be 24
+        "Attempt to update 'value' attribute for parameter 'int_param' ignored"
+        in str(warning_info[0].message)
+    )
+    param = pm.parameters_map["int_param"]
+    if isinstance(param, IntParameter):
+        assert param.value == 5  # Value should remain unchanged
+        assert param.min == 0  # Other attributes should be updated
+    else:
+        pytest.fail("Expected IntParameter")
 
 
-def test_set_parameter_value_non_existing_parameter():
-    """Test that setting the value of a non-existing parameter raises a ValueError."""
+def test_get_parameters_values():
+    """Test that get_parameters_values returns the correct
+    dictionary of parameter values."""
+    param_defs = {
+        "int_param": {"type": "int", "default": 5},
+        "float_param": {"type": "float", "default": 3.14},
+    }
+    pm = ParameterManager(param_defs)
 
-    def func(x: int = 42):
-        return x
-
-    pm = ParameterManager(input_function=func)
-    with pytest.raises(ValueError):
-        pm.set_parameter_value("y", 24)
-
-
-def test_validate_function_parameters_with_type_not_annotated():
-    """Test that the _validate_function_parameters method
-    raises ValueError for parameters with no type annotations."""
-
-    # Here we define a function with one parameter
-    # that lacks a type annotation, i.e., 'y'.
-    def func(x: int, y):
-        return x + y
-
-    with pytest.raises(ValueError) as excinfo:
-        pm = ParameterManager(input_function=func)
-        pm._validate_function_parameters()
-
-    assert "Parameter 'y' has no type annotation." in str(excinfo.value)
+    values = pm.get_parameters_values()
+    assert values == {"int_param": 5, "float_param": 3.14}
 
 
-def test_validate_function_parameters_with_type_not_registered():
-    """Test that the _validate_function_parameters method raises
-    ValueError when there's no Parameter subclass registered."""
+def test_parameter_type_validation():
+    """Test that parameters are correctly validated based on their type."""
+    param_defs: Dict[str, Dict[str, Any]] = {
+        "int_param": {"type": "int", "default": 5},
+        "str_param": {
+            "type": "str",
+            "default": "test",
+            "accepted_values": ["test", "example"],
+        },
+    }
+    pm = ParameterManager(param_defs)
 
-    # Define a mock type that we know does not have an associated
-    # Parameter subclass in the `parameter_type_catalogue`.
-    class UnregisteredType:
-        pass
+    with pytest.raises(
+        InvalidParameterAttributeError, match="Invalid value for parameter 'int_param'"
+    ):
+        pm.set_parameter_value("int_param", "not an int")
 
-    # Register a function with an annotated parameter of the `UnregisteredType`.
-    def func(x: UnregisteredType):
-        _ = x
-        pass
+    with pytest.raises(
+        InvalidParameterAttributeError, match="Invalid value for parameter 'str_param'"
+    ):
+        pm.set_parameter_value("str_param", "invalid")
 
-    with pytest.raises(ValueError) as excinfo:
-        pm = ParameterManager(input_function=func)
-        pm._validate_function_parameters()
-    print(str(excinfo.value))
 
-    # Check that the error message includes the correct unrecognized type name.
-    assert "No Parameter class registered for type" in str(excinfo.value)
-    # assert "'unregisteredtype'" in str(excinfo.value)
+def test_invalid_parameter_attribute_error():
+    """Test that InvalidParameterAttributeError is raised
+    when setting an invalid attribute."""
+    param_defs = {"int_param": {"type": "int", "default": 5}}
+    pm = ParameterManager(param_defs)
+
+    with pytest.raises(
+        InvalidParameterAttributeError,
+        match="Invalid attribute for parameter 'int_param'",
+    ):
+        pm.set_parameter_attributes("int_param", {"invalid_attr": "value"})
+
+
+def test_get_parameters_values_after_update():
+    """Test that get_parameters_values returns updated values after modifying parameters."""  # noqa: E501
+    param_defs = {
+        "int_param": {"type": "int", "default": 5},
+        "float_param": {"type": "float", "default": 3.14},
+    }
+    pm = ParameterManager(param_defs)
+
+    pm.set_parameter_value("int_param", 10)
+    pm.set_parameter_value("float_param", 2.718)
+
+    values = pm.get_parameters_values()
+    assert values == {"int_param": 10, "float_param": 2.718}
+
+
+def test_parameter_manager_no_parameters():
+    """Test that ParameterManager correctly
+    initializes with no parameter definitions."""
+    pm = ParameterManager()
+    assert len(pm.parameters_map) == 0
+    assert pm.get_parameters_values() == {}
+
+
+def test_parameter_manager_empty_dict():
+    """Test that ParameterManager correctly initializes with an empty dictionary."""
+    pm = ParameterManager({})
+    assert len(pm.parameters_map) == 0
+    assert pm.get_parameters_values() == {}
+
+
+def test_set_parameter_value_no_parameters():
+    """Test that set_parameter_value raises a
+    ParameterNotFoundError when there are no parameters."""
+    pm = ParameterManager()
+    with pytest.raises(
+        ParameterNotFoundError, match="Parameter 'test_param' does not exist"
+    ):
+        pm.set_parameter_value("test_param", 10)
+
+
+def test_set_parameter_attributes_no_parameters():
+    """Test that set_parameter_attributes raises a
+    ParameterNotFoundError when there are no parameters."""
+    pm = ParameterManager()
+    with pytest.raises(
+        ParameterNotFoundError, match="Parameter 'test_param' does not exist"
+    ):
+        pm.set_parameter_attributes("test_param", {"min": 0})

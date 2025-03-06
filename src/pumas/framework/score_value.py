@@ -15,7 +15,7 @@ class FrameworkScoreValue(BaseFramework):
         # by applying the desirability function to the property dataframe column
         desirability_score_dataframe_list = [
             self._properties_dataframe.apply_elementwise_column(
-                func=v.compute_score, column_name=k, new_column_name=k
+                func=v.compute_numeric, column_name=k, new_column_name=k
             )
             for k, v in self._desirability_functions_map.items()
         ]
@@ -41,7 +41,7 @@ class FrameworkScoreValue(BaseFramework):
         for i, row in enumerate(self.desirability_dataframe.row_data):
             index = self.desirability_dataframe.index.values[i]
             values = [row[k] for k in keys]
-            aggregated_score = aggregation_function.compute_score(
+            aggregated_score = aggregation_function.compute_numeric(
                 values=values, weights=weights
             )
             index_values.append(index)

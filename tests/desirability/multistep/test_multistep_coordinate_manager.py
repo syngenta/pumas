@@ -117,11 +117,11 @@ def test_coordinate_manager_invalid_coordinates():
     This includes non-numeric values and mixed valid/invalid coordinates.
     """  # noqa E501
     with pytest.raises(ValueError, match="Error converting coordinates to Point: "):
-        CoordinateManager([(1.0, 2.0), (1.0, "invalid"), (3.0, 4.0)])
+        CoordinateManager([(1.0, 2.0), (1.0, "invalid"), (3.0, 4.0)])  # type: ignore
     with pytest.raises(ValueError, match="Error converting coordinates to Point: "):
-        CoordinateManager([(1.0, 2.0), ("invalid", 0.1), (3.0, 4.0)])
+        CoordinateManager([(1.0, 2.0), ("invalid", 0.1), (3.0, 4.0)])  # type: ignore
     with pytest.raises(ValueError, match="Error converting coordinates to Point: "):
-        CoordinateManager([(1.0, 2.0), ("invalid", "invalid"), (3.0, 4.0)])
+        CoordinateManager([(1.0, 2.0), ("invalid", "invalid"), (3.0, 4.0)])  # type: ignore  # noqa E501
 
 
 def test_coordinate_manager_duplicate_x_coordinates():

@@ -3,14 +3,12 @@ import math
 import numpy as np
 import pytest
 
-from pumas.desirability import desirability_catalogue
+from pumas.desirability.multistep import multistep
 
 
 @pytest.fixture
-def utility_function():
-    desirability_class = desirability_catalogue.get("multistep")
-    desirability_instance = desirability_class()
-    return desirability_instance.utility_function
+def desirability_utility_function():
+    return multistep
 
 
 @pytest.mark.parametrize(
@@ -44,8 +42,9 @@ def utility_function():
         ],  # x exactly at middle coordinate
     ],
 )
-def test_multi_step(utility_function, coordinates, x, expected):
-    result = utility_function(x=x, coordinates=coordinates, shift=0.0)
+def test_multi_step(desirability_utility_function, coordinates, x, expected):
+    params = {"coordinates": coordinates, "shift": 0.0}
+    result = desirability_utility_function(x=x, **params)
     assert math.isclose(result, expected, rel_tol=1e-9, abs_tol=1e-9)
 
 
@@ -60,14 +59,15 @@ def test_multi_step(utility_function, coordinates, x, expected):
         (1.75, [(1.0, 0.0), (2.0, 1.0)], 0.75),  # Three-quarter point
     ],
 )
-def test_multistep_basic(utility_function, x, coordinates, expected):
+def test_multistep_basic(desirability_utility_function, x, coordinates, expected):
     """
     Test basic multistep scenarios.
 
     This test covers various common interpolation cases, including
     midpoint, endpoints, and fractional points between two given coordinates.
     """  # noqa E501
-    result = utility_function(x=x, coordinates=coordinates)
+    params = {"coordinates": coordinates, "shift": 0.0}
+    result = desirability_utility_function(x=x, **params)
     assert math.isclose(result, expected, rel_tol=1e-9)
 
 
@@ -80,7 +80,7 @@ def test_multistep_basic(utility_function, x, coordinates, expected):
         ),  # Single point
     ],
 )
-def test_multistep_single_point(utility_function, coordinates, error_msg):
+def test_multistep_single_point(desirability_utility_function, coordinates, error_msg):
     """
     Test multistep behavior for a single point.
 
@@ -90,8 +90,9 @@ def test_multistep_single_point(utility_function, coordinates, error_msg):
 
     This test verifies that the function correctly identifies and rejects this invalid input.
     """  # noqa E501
+    params = {"coordinates": coordinates, "shift": 0.0}
     with pytest.raises(ValueError, match=error_msg):
-        utility_function(x=1.0, coordinates=coordinates, shift=0.0)
+        desirability_utility_function(x=1.0, **params)
 
 
 @pytest.mark.parametrize(
@@ -102,7 +103,7 @@ def test_multistep_single_point(utility_function, coordinates, error_msg):
         (1.5, [(1.0, float("nan")), (2.0, 1.0)]),
     ],
 )
-def test_multistep_invalid_values(utility_function, x, coordinates):
+def test_multistep_invalid_values(desirability_utility_function, x, coordinates):
     """
     Test multistep with invalid y-coordinate values.
 
@@ -112,8 +113,9 @@ def test_multistep_invalid_values(utility_function, x, coordinates):
 
     This test verifies the function's behavior with invalid input values.
     """  # noqa E501
+    params = {"coordinates": coordinates, "shift": 0.0}
     with pytest.raises(ValueError):
-        utility_function(x=x, coordinates=coordinates, shift=0.0)
+        desirability_utility_function(x=x, **params)
 
 
 @pytest.mark.parametrize(
@@ -124,7 +126,9 @@ def test_multistep_invalid_values(utility_function, x, coordinates):
         (2.5, [(0.0, 0.0), (5.0, 1.0)], 0.5),
     ],
 )
-def test_multistep_linear_relationship(utility_function, x, coordinates, expected):
+def test_multistep_linear_relationship(
+    desirability_utility_function, x, coordinates, expected
+):
     """
     Test that multistep maintains a linear relationship between points.
 
@@ -134,7 +138,8 @@ def test_multistep_linear_relationship(utility_function, x, coordinates, expecte
 
     This test verifies that the function correctly implements linear interpolation.
     """  # noqa E501
-    result = utility_function(x=x, coordinates=coordinates, shift=0.0)
+    params = {"coordinates": coordinates, "shift": 0.0}
+    result = desirability_utility_function(x=x, **params)
     assert math.isclose(result, expected, rel_tol=1e-9)
 
 
@@ -145,7 +150,7 @@ def test_multistep_linear_relationship(utility_function, x, coordinates, expecte
         (1.5, [(-1.0, 0.0), (-2.0, 1.0)]),  # Negative x values
     ],
 )
-def test_multistep_reverse_order(utility_function, x, coordinates):
+def test_multistep_reverse_order(desirability_utility_function, x, coordinates):
     """
     Test multistep with points in reverse order or with negative x-coordinates.
 
@@ -155,7 +160,8 @@ def test_multistep_reverse_order(utility_function, x, coordinates):
 
     This test verifies that the function handles various orderings of input coordinates.
     """  # noqa E501
-    result = utility_function(x=x, coordinates=coordinates, shift=0.0)
+    params = {"coordinates": coordinates, "shift": 0.0}
+    result = desirability_utility_function(x=x, **params)
     assert 0 <= result <= 1, f"Multistep result {result} is out of bounds"
 
 
@@ -169,7 +175,7 @@ def test_multistep_reverse_order(utility_function, x, coordinates):
         (2.0, [(1.0, 0.5), (2.0, 0.7), (3.0, 0.9)], 0.7),  # x at middle point
     ],
 )
-def test_multistep_edge_cases(utility_function, x, coordinates, expected):
+def test_multistep_edge_cases(desirability_utility_function, x, coordinates, expected):
     """
     Test multistep function for various edge cases.
 
@@ -184,11 +190,12 @@ def test_multistep_edge_cases(utility_function, x, coordinates, expected):
     y-value for out-of-range x values and exact matches, and interpolating correctly
     for in-between values.
     """  # noqa E501
-    result = utility_function(x=x, coordinates=coordinates, shift=0.0)
+    params = {"coordinates": coordinates, "shift": 0.0}
+    result = desirability_utility_function(x=x, **params)
     assert math.isclose(result, expected, rel_tol=1e-9)
 
 
-def test_multistep_many_coordinates(utility_function):
+def test_multistep_many_coordinates(desirability_utility_function):
     """
     Test multistep function with a large number of coordinates.
 
@@ -201,7 +208,8 @@ def test_multistep_many_coordinates(utility_function):
     coordinates = [(i, i / 1000) for i in range(1000)]
     x = 500.5
     expected = 0.5005
-    result = utility_function(x=x, coordinates=coordinates, shift=0.0)
+    params = {"coordinates": coordinates, "shift": 0.0}
+    result = desirability_utility_function(x=x, **params)
     assert math.isclose(result, expected, rel_tol=1e-9)
 
 
@@ -217,7 +225,7 @@ def test_multistep_many_coordinates(utility_function):
         [(25.0, 1.0), (40.0, 0.0), (60.0, 0.0), (80.0, 1.0)],
     ],
 )
-def test_multistep_shift_impact(utility_function, coordinates):
+def test_multistep_shift_impact(desirability_utility_function, coordinates):
     """
     Test the impact of the shift parameter on the multistep desirability function.
 
@@ -237,7 +245,9 @@ def test_multistep_shift_impact(utility_function, coordinates):
     )
 
     # Calculate reference values
-    reference_values = [utility_function(x, coordinates, shift=0.0) for x in x_range]
+    reference_values = [
+        desirability_utility_function(x, coordinates, shift=0.0) for x in x_range
+    ]
 
     # Verify that there are unshifted values below the shift value
     assert any(
@@ -246,7 +256,8 @@ def test_multistep_shift_impact(utility_function, coordinates):
 
     # Calculate shifted values
     shifted_values = [
-        utility_function(x, coordinates, shift=shift_value) for x in x_range
+        desirability_utility_function(x, coordinates, shift=shift_value)
+        for x in x_range
     ]
 
     # Verify properties of shifted values
@@ -262,17 +273,3 @@ def test_multistep_shift_impact(utility_function, coordinates):
     assert all(
         v >= shift_value for v in shifted_values
     ), "No unshifted values below shift value"
-
-
-@pytest.mark.parametrize(
-    "shift, error_type, error_msg",
-    [
-        (-0.1, ValueError, "Shift must be between 0 and 1"),
-        (1.1, ValueError, "Shift must be between 0 and 1"),
-    ],
-)
-def test_multistep_wrong_shift(utility_function, shift, error_type, error_msg):
-    x = 50.0
-    coordinates = [(49.5, 0.0), (50.5, 1.0)]
-    with pytest.raises(error_type, match=error_msg):
-        utility_function(x, coordinates, shift=shift)

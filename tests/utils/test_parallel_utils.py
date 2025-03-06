@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 
 from pumas.utils.parallel_utils import parallelize, parallelize_with_indices
@@ -40,7 +41,7 @@ def test_parallelize_invalid_num_jobs():
 def test_parallelize_invalid_func():
     data = [1, 2, 3, 4, 5]
     with pytest.raises(ValueError):
-        parallelize(func="not_a_function", data=data, num_jobs=2, method="threads")
+        parallelize(func="not_a_function", data=data, num_jobs=2, method="threads")  # type: ignore # noqa: E501
 
 
 def test_parallelize_execution_failure():
@@ -97,7 +98,7 @@ def test_parallelize_with_indices_invalid_func():
     data = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
     with pytest.raises(ValueError):
         parallelize_with_indices(
-            func="not_a_function", data=data, num_jobs=2, method="threads"
+            func="not_a_function", data=data, num_jobs=2, method="threads"  # type: ignore # noqa: E501
         )
 
 

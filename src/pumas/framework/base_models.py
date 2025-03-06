@@ -92,7 +92,7 @@ class BaseFramework(ABC):
                 objective.desirability_function.name
             )()
             # set the parameters of the desirability function
-            desirability_function.set_coefficient_parameters_values(
+            desirability_function.set_parameters_values(
                 values_dict=objective.desirability_function.parameters
             )
             self._desirability_functions_map[objective.name] = desirability_function

@@ -1,10 +1,11 @@
 import math
 from collections import Counter
-from typing import Iterable, List, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, field_validator
 
 from pumas.desirability.base_models import Desirability
+from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 
 class Point(BaseModel):
@@ -116,31 +117,29 @@ class CoordinateManager:
         self.points = sort_points(points=points)
 
 
-def interpolate(x: float, p1: Point, p2: Point) -> float:
+def interpolate(x: Union[float, UFloat], p1: Point, p2: Point) -> Union[float, UFloat]:
     t = (x - p1.x) / (p2.x - p1.x)
-    return p1.y + t * (p2.y - p1.y)
+    return p1.y + t * (p2.y - p1.y)  # type: ignore
 
 
 def multistep(
-    x: float,
+    x: Union[float, UFloat],
     coordinates: Iterable[Tuple[Union[int, float], Union[int, float]]],
     shift: float = 0.0,
-) -> float:
-    if not 0 <= shift <= 1:
-        raise ValueError("Shift must be between 0 and 1")
+) -> Union[float, UFloat]:
 
     cm = CoordinateManager(coordinates=list(coordinates))
     points = cm.points
 
     result = None
-    if x <= points[0].x:
+    if x <= points[0].x:  # type: ignore  # this might not work with ufloat
         result = points[0].y
-    elif x >= points[-1].x:
+    elif x >= points[-1].x:  # type: ignore  # this might not work with ufloat
         result = points[-1].y
     else:
         for i in range(len(points) - 1):
-            if points[i].x <= x <= points[i + 1].x:
-                result = interpolate(x, points[i], points[i + 1])
+            if points[i].x <= x <= points[i + 1].x:  # type: ignore  # this might not work with ufloat # noqa: E501
+                result = interpolate(x, points[i], points[i + 1])  # type: ignore # review usage of type int in Point  # noqa: E501
                 break
 
     if result is None:
@@ -152,16 +151,57 @@ def multistep(
     return result
 
 
+compute_numeric_multistep = multistep
+compute_ufloat_multistep = multistep
+
+
 class MultiStep(Desirability):
-    def __init__(self):
-        super().__init__(
-            utility_function=multistep,
-            coefficient_parameters_names=["coordinates", "shift"],
-            input_parameters_names=["x"],
+    def __init__(self, params: Optional[Dict[str, Any]] = None):
+        super().__init__()
+        self._set_parameter_definitions(
+            {
+                "coordinates": {"type": "iterable", "default": None},
+                "shift": {"type": "float", "min": 0.0, "max": 1.0, "default": 0.0},
+            }
         )
-        # Set defaults and boundaries for the parameters:
-        attributes_change_map = {
-            "coordinates": {"default": None},
-            "shift": {"min": 0.0, "max": 1.0, "default": 0.0},
-        }
-        self.set_coefficient_parameters_attributes(attributes_map=attributes_change_map)
+        self._validate_and_set_parameters(params)
+
+    def compute_numeric(self, x: float) -> float:
+        """
+        Compute the multistep desirability for a numeric input.
+
+        Args:
+            x (float): The input value.
+
+        Returns:
+            float: The computed desirability value.
+
+        Raises:
+            InvalidParameterTypeError: If the input is not a float.
+            ParameterValueNotSet: If any required parameter is not set.
+        """
+        self._validate_input(x, float)
+        self._check_coefficient_parameters_values()
+        parameters = self.get_parameters_values()
+        return compute_numeric_multistep(x=x, **parameters)  # type: ignore
+
+    def compute_ufloat(self, x: UFloat) -> UFloat:
+        """
+        Compute the multistep desirability for an uncertain float input.
+
+        Args:
+            x (UFloat): The uncertain float input value.
+
+        Returns:
+            UFloat: The computed desirability value with uncertainty.
+
+        Raises:
+            InvalidParameterTypeError: If the input is not a UFloat.
+            ParameterValueNotSet: If any required parameter is not set.
+        """
+        self._validate_input(x, UFloat)
+        self._check_coefficient_parameters_values()
+        parameters = self.get_parameters_values()
+        return compute_ufloat_multistep(x=x, **parameters)  # type: ignore
+
+    __call__ = compute_numeric

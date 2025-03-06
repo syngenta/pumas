@@ -3,14 +3,12 @@ import math
 import numpy as np
 import pytest
 
-from pumas.desirability import desirability_catalogue
+from pumas.desirability.double_sigmoid import double_sigmoid
 
 
 @pytest.fixture
 def utility_function():
-    desirability_class = desirability_catalogue.get("double_sigmoid")
-    desirability_instance = desirability_class()
-    return desirability_instance.utility_function
+    return double_sigmoid
 
 
 # Numerical stability tests
@@ -153,33 +151,6 @@ def test_double_sigmoid_shift(utility_function):
     assert shifted > no_shift, "Shift not working correctly"
 
 
-# Error raising tests
-@pytest.mark.parametrize(
-    "low, high, coef_div, coef_si, coef_se, base, shift, error_message",
-    [
-        (0, 10, 1, -1, 1, 10, 0, "'coef_si' must be positive"),
-        (0, 10, 1, 1, -1, 10, 0, "'coef_se' must be positive"),
-        (0, 10, 1, 1, 1, 0.5, 0, "'base' must be greater than 1"),
-        (0, 10, 1, 1, 1, 10, -0.1, "'shift' must be between 0 and 1"),
-        (0, 10, 1, 1, 1, 10, 1.1, "'shift' must be between 0 and 1"),
-    ],
-)
-def test_double_sigmoid_error_raising(
-    utility_function, low, high, coef_div, coef_si, coef_se, base, shift, error_message
-):
-    """
-    Test that the double sigmoid function raises appropriate errors for invalid inputs.
-
-    Hypothesis:
-    The function should raise ValueError with specific error messages for various invalid input combinations.
-
-    This test verifies that the function raises the expected errors with the correct error messages for each invalid input case.
-    """  # noqa E501
-    with pytest.raises(ValueError, match=error_message):
-        utility_function(5, low, high, coef_div, coef_si, coef_se, base, False, shift)
-
-
-# Parameter impact tests
 @pytest.mark.parametrize("coef_div", [0.1, 1, 10])
 def test_double_sigmoid_coef_div_impact(utility_function, coef_div):
     """

@@ -1,7 +1,8 @@
+# type: ignore
 import numpy as np
 import pytest
 
-from pumas.desirability import desirability_catalogue
+from pumas.desirability.double_sigmoid import double_sigmoid
 from tests.desirability.external_reference_implementation.double_sigmoid import (
     DoubleSigmoid,
     Parameters,
@@ -9,15 +10,8 @@ from tests.desirability.external_reference_implementation.double_sigmoid import 
 
 
 @pytest.fixture
-def desirability():
-    desirability_class = desirability_catalogue.get("double_sigmoid")
-    desirability_instance = desirability_class()
-    return desirability_instance
-
-
-@pytest.fixture
-def utility_function(desirability):
-    return desirability.utility_function
+def utility_function():
+    return double_sigmoid
 
 
 @pytest.mark.parametrize("x", [float(x) for x in range(-20, 20, 5)])

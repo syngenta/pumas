@@ -1,4 +1,4 @@
 Uncertainties
 ----------------------------
-.. automodule:: pumas.error_propagation.uncertainties
+.. automodule:: pumas.uncertainty.uncertainties_wrapper
     :noindex:

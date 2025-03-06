@@ -6,10 +6,6 @@ High-level Class interface
 .. autoclass:: pumas.desirability.double_sigmoid.DoubleSigmoid
     :noindex:
 
-Low-level Utility Function
-----------------------------
-.. autofunction::  pumas.desirability.double_sigmoid.double_sigmoid
-    :noindex:
 
 Parameter Analysis
 ---------------------

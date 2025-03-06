@@ -1,23 +1,16 @@
 import numpy as np
 import pytest
 
-from pumas.desirability import desirability_catalogue
-from tests.desirability.external_reference_implementation.sigmoids import (
+from pumas.desirability.sigmoid import sigmoid
+from tests.desirability.external_reference_implementation.sigmoids import (  # type: ignore # noqa: 501
     Parameters,
     Sigmoid,
 )
 
 
 @pytest.fixture
-def desirability():
-    desirability_class = desirability_catalogue.get("sigmoid")
-    desirability_instance = desirability_class()
-    return desirability_instance
-
-
-@pytest.fixture
-def utility_function(desirability):
-    return desirability.utility_function
+def desirability_utility_function():
+    return sigmoid
 
 
 @pytest.mark.parametrize("x", [float(x) for x in range(-20, 20, 5)])
@@ -33,13 +26,15 @@ def utility_function(desirability):
     ],
 )
 def test_sigmoid_equivalence_to_func_reference(
-    utility_function,
+    desirability_utility_function,
     x,
     low,
     high,
     k,
 ):
-    y = utility_function(x=x, low=low, high=high, k=k, shift=0.0, base=10.0)
+    params = {"low": low, "high": high, "k": k, "shift": 0.0, "base": 10.0}
+
+    y = desirability_utility_function(x=x, **params)
     y = np.float32(y)
 
     parameters = Parameters(

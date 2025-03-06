@@ -4,25 +4,27 @@ from pumas.desirability import desirability_catalogue
 
 
 @pytest.fixture
-def desirability():
+def desirability_class():
     desirability_class = desirability_catalogue.get("value_mapping")
-    desirability_instance = desirability_class()
-    return desirability_instance
+    return desirability_class
 
 
-def test_multistep_results_compute_score(desirability):
-    desirability.set_coefficient_parameters_values(
-        {"mapping": {"Low": 0.2, "Medium": 0.5, "High": 0.8}, "shift": 0.0}
-    )
-    result = desirability.compute_score(x="Low")
+def test_value_mapping_results_compute_string(desirability_class):
+    params = {"mapping": {"Low": 0.2, "Medium": 0.5, "High": 0.8}, "shift": 0.0}
+    desirability = desirability_class(params=params)
+    result = desirability.compute_string(x="Low")
     assert result == pytest.approx(expected=0.2)
 
 
-# let this test fail
-@pytest.mark.xfail
-def test_multistep_results_compute_uscore(desirability):
-    desirability.set_coefficient_parameters_values(
-        {"mapping": {"Low": 0.2, "Medium": 0.5, "High": 0.8}, "shift": 0.0}
-    )
-    result = desirability.compute_uscore(x="Low")
-    assert result == pytest.approx(expected=0.2)
+def test_value_mapping_results_compute_score(desirability_class):
+    params = {"mapping": {"Low": 0.2, "Medium": 0.5, "High": 0.8}, "shift": 0.0}
+    desirability = desirability_class(params=params)
+    with pytest.raises(NotImplementedError):
+        _ = desirability.compute_numeric(x="Low")
+
+
+def test_value_mapping_results_compute_uscore(desirability_class):
+    params = {"mapping": {"Low": 0.2, "Medium": 0.5, "High": 0.8}, "shift": 0.0}
+    desirability = desirability_class(params=params)
+    with pytest.raises(NotImplementedError):
+        _ = desirability.compute_numeric(x="Low")

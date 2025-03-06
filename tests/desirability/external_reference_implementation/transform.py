@@ -1,3 +1,4 @@
+# type: ignore
 """Transform base class
 
 Registers every child class

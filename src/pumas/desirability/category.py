@@ -1,10 +1,11 @@
 import math
 from collections import Counter
-from typing import Iterable, List, Set, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, field_validator
 
 from pumas.desirability.base_models import Desirability
+from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 
 class CategoryPoint(BaseModel):
@@ -13,7 +14,7 @@ class CategoryPoint(BaseModel):
 
     @field_validator("value")
     def validate_value(cls, v):
-        if not 0 <= v <= 1:
+        if not 0.0 <= v <= 1.0:
             raise ValueError("Value must be between 0 and 1")
         return v
 
@@ -80,23 +81,55 @@ class CategoryManager:
         self.points = points
 
 
-def category(x: str, categories: Iterable[Tuple[str, float]]) -> float:
+def category(x: str, categories: Iterable[Tuple[str, float]], shift: float) -> float:
     _ = CategoryManager(categories=list(categories))
 
     category_dict = {cat: val for cat, val in categories}
     if x not in category_dict:
         raise ValueError(f"Category '{x}' not found in provided categories")
-    return category_dict[x]
+
+    result = category_dict[x]
+
+    # Apply the shift
+    result = result * (1 - shift) + shift
+
+    return result
 
 
 class CategoryDesirability(Desirability):
-    def __init__(self):
-        super().__init__(
-            utility_function=category,
-            coefficient_parameters_names=["categories"],
-            input_parameters_names=["x"],
+    def __init__(self, params: Optional[Dict[str, Any]] = None):
+        super().__init__()
+        self._set_parameter_definitions(
+            {
+                "categories": {"type": "iterable", "default": None},
+                "shift": {"type": "float", "min": 0.0, "max": 1.0, "default": 0.0},
+            }
         )
-        attributes_change_map = {
-            "categories": {"default": None},
-        }
-        self.set_coefficient_parameters_attributes(attributes_map=attributes_change_map)
+        self._validate_and_set_parameters(params)
+
+    def compute_string(self, x: str) -> float:
+        """
+        Compute the category desirability for a string input.
+
+        Args:
+            x (float): The input value.
+
+        Returns:
+            float: The computed desirability value.
+
+        Raises:
+            InvalidParameterTypeError: If the input is not a float.
+            ParameterValueNotSet: If any required parameter is not set.
+        """
+        self._validate_input(x, str)
+        self._check_coefficient_parameters_values()
+        parameters = self.get_parameters_values()
+        return category(x=x, **parameters)
+
+    def compute_numeric(self, x: float) -> float:
+        raise NotImplementedError
+
+    def compute_ufloat(self, x: UFloat) -> UFloat:
+        raise NotImplementedError
+
+    __call__ = compute_string

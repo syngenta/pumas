@@ -140,88 +140,63 @@ Example Usage:
 
 >>> from pumas.architecture.parameters import ParameterManager
 
-A sample function definition with a type-annotated parameter that has a default value.
+Initialize the ParameterManager with parameter definitions.
 
->>> def utility_function(x: int = 5):
-...     return x * 2
-
-Initialize the ParameterManager with the sample utility function.
-
->>> pm = ParameterManager(utility_function)
+>>> param_defs = {
+...     "q": {"type": "int", "default": 5}
+... }
+>>> pm = ParameterManager(param_defs)
 
 Check the initial state of the parameters managed by the ParameterManager.
 The expected output should show a dictionary containing representation of an `IntParameter` instance for 'x'.
-In this case, the default value of 'x' is 5, and no boundaries are defined.
+In this case, the default value of 'q' is 5, and no boundaries are defined.
 
 >>> pm.parameters_map
-{'x': IntParameter(name='x', default=5, min=None, max=None)}
+{'q': IntParameter(name='q', default=5, min=None, max=None)}
 
 Check the current value of the parameter: it defaults to 5.
 
->>> pm.parameters_map['x'].value
+>>> pm.parameters_map['q'].value
 5
 
->>> id_1 = id(pm.parameters_map['x'])
+>>> id_1 = id(pm.parameters_map['q'])
 
->>> pm.parameters_map['x'].set_value(10)  # Set a new value for the parameter.
->>> pm.parameters_map['x'].value  # Check the new value of the parameter.
+>>> pm.set_parameter_value('q', 10)  # Set a new value for the parameter.
+>>> pm.parameters_map['q'].value  # Check the new value of the parameter.
 10
->>> id_2 = id(pm.parameters_map['x'])
+>>> id_2 = id(pm.parameters_map['q'])
 
-Changign the value of the parameter should not change the parameter instance.
->>> id_1 == id_2  # Check that the parameter instance has not changed.
+Changing the value of the parameter should not change the parameter instance.
+>>> id_1 == id_2
 True
 
->>> pm.set_parameter_attributes(name='x', attributes={'min': 1, 'max': 10, 'default': 3})
->>> pm.parameters_map  # Check the updated state of the parameters managed by the ParameterManager.
-{'x': IntParameter(name='x', default=3, min=1, max=10)}
-
->>> pm.parameters_map['x'].value # The parameter 'x' is now updated with min, max, and new default values.
-3
->>> id_3 = id(pm.parameters_map['x'])
->>> id_1 == id_2 != id_3  # Check that the parameter instance has changed: a new instance has been created.
-True
-
->>> pm.set_parameter_value('x', 5)  # Set a new value for the parameter.
->>> pm.parameters_map['x'].value  # Check the new value of the parameter.
-5
 """  # noqa: E501
 
-import inspect
 import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Mapping,
-    Optional,
-    Type,
-    Union,
-    get_origin,
-    get_type_hints,
-)
-
-from uncertainties import UFloat
+from typing import Any, Dict, Iterable, Optional, Type, Union
 
 from pumas.architecture.catalogue import Catalogue
 from pumas.architecture.exceptions import (
     InvalidAcceptedValuesError,
     InvalidBoundaryDefinitionError,
     InvalidBoundaryError,
+    InvalidParameterAttributeError,
     InvalidParameterNameError,
     InvalidParameterTypeError,
+    ParameterDefinitionError,
+    ParameterNotFoundError,
     ParameterUpdateAttributeWarning,
 )
+from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 # monkey patching the name attribute that is missing from the Iterable type
 Iterable.__name__ = "Iterable"
 
 
 # Helper functions to validate types
-def validate_name(name: str):
+def validate_name(name: str) -> None:
     if isinstance(name, str) and len(name.strip()) == 0:
         raise InvalidParameterNameError(
             f"The parameter name is empty: {type(name).__name__}"
@@ -233,7 +208,7 @@ def validate_name(name: str):
         )
 
 
-def validate_type(item, expected_type: Type):
+def validate_type(item: Any, expected_type: Type[Any]) -> None:
     if (isinstance(item, bool) and expected_type is not bool and item is not None) or (
         not isinstance(item, expected_type) and item is not None
     ):
@@ -245,7 +220,7 @@ def validate_type(item, expected_type: Type):
 
 def validate_range_values(
     min_value: Optional[Union[int, float]], max_value: Optional[Union[int, float]]
-):
+) -> None:
     if min_value is not None and max_value is not None and min_value > max_value:
         raise InvalidBoundaryDefinitionError(
             f"Minimum value {min_value} is greater than maximum value {max_value}."
@@ -255,8 +230,8 @@ def validate_range_values(
 def validate_range_types(
     min_value: Optional[Union[int, float]],
     max_value: Optional[Union[int, float]],
-    expected_type: Type,
-):
+    expected_type: Type[Any],
+) -> None:
     if min_value is not None and not isinstance(min_value, expected_type):
         raise InvalidBoundaryDefinitionError(
             f"Expected type {expected_type}, got {type(min_value).__name__} instead."
@@ -282,8 +257,8 @@ def validate_range_application(
 
 
 def validate_accepted_values_types(
-    accepted_values: Optional[Iterable[Any]], expected_type: Type
-):
+    accepted_values: Optional[Iterable[Any]], expected_type: Type[Any]
+) -> None:
     if accepted_values is not None:
         if not all(isinstance(av, expected_type) for av in accepted_values):
             raise InvalidBoundaryDefinitionError(
@@ -293,7 +268,7 @@ def validate_accepted_values_types(
 
 def validate_accepted_values_application(
     item: Any, accepted_values: Optional[Iterable[Any]]
-):
+) -> None:
     if item is None:
         return
     if accepted_values and item not in accepted_values:
@@ -322,7 +297,7 @@ class Parameter(ABC):
     _value: Any = field(init=False, repr=False, default=None)
 
     @abstractmethod
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         """Expected data_frame type of the parameter value."""
 
     @property
@@ -355,7 +330,7 @@ class IntParameter(Parameter):
     max: Optional[int] = field(init=True, repr=True, default=None)
 
     @property
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         """Returns the parameter type (`int`)."""
         return int
 
@@ -409,7 +384,7 @@ class FloatParameter(Parameter):
     max: Optional[float] = field(init=True, repr=True, default=None)
 
     @property
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         """Returns the parameter type (`float`)."""
         return float
 
@@ -461,7 +436,7 @@ class StrParameter(Parameter):
     accepted_values: Optional[Iterable[str]] = field(init=True, repr=True, default=None)
 
     @property
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         """Returns the parameter type (`str`)."""
         return str
 
@@ -510,7 +485,7 @@ class BoolParameter(Parameter):
     default: Optional[bool] = field(init=True, repr=True, default=None)
 
     @property
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         """Returns the parameter type (`bool`)."""
         return bool
 
@@ -535,6 +510,10 @@ class BoolParameter(Parameter):
         self._value = value
 
 
+# TODO: define better the min-max boundaries for
+#  UFloatParameter and remove type ignoring
+
+
 @dataclass
 class UFloatParameter(Parameter):
     """
@@ -556,16 +535,16 @@ class UFloatParameter(Parameter):
     max: Optional[UFloat] = field(init=True, repr=True, default=None)
 
     @property
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         """Returns the parameter type (`UFloat`)."""
         return UFloat
 
     def __post_init__(self):
         validate_name(name=self.name)
         validate_range_types(
-            min_value=self.min, max_value=self.max, expected_type=self.param_type
+            min_value=self.min, max_value=self.max, expected_type=self.param_type  # type: ignore # noqa: E501
         )
-        validate_range_values(min_value=self.min, max_value=self.max)
+        validate_range_values(min_value=self.min, max_value=self.max)  # type: ignore
         if self.default is not None:
             self.set_value(self.default)
 
@@ -585,7 +564,7 @@ class UFloatParameter(Parameter):
         if value is not None:
             validate_type(item=value, expected_type=self.param_type)
             validate_range_application(
-                item=value, min_value=self.min, max_value=self.max
+                item=value, min_value=self.min, max_value=self.max  # type: ignore
             )
         self._value = value
 
@@ -599,14 +578,12 @@ class IterableParameter(Parameter):
 
     Attributes:
         default (Optional[Iterable]): The default value for the parameter.
-        accepted_values (Optional[Iterable]):
-            An iterable of acceptable string values.
     """
 
-    default: Optional[Iterable] = field(init=True, repr=True, default_factory=list)
+    default: Optional[Iterable[Any]] = field(init=True, repr=True, default_factory=list)
 
     @property
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         return Iterable
 
     def __post_init__(self):
@@ -615,7 +592,7 @@ class IterableParameter(Parameter):
         if self.default is not None:
             self.set_value(self.default)
 
-    def set_value(self, value: Optional[Iterable]) -> None:
+    def set_value(self, value: Optional[Iterable[Any]]) -> None:
         """
         Sets the value of the Iterable parameter after validating its type and range.
 
@@ -640,14 +617,14 @@ class MappingParameter(Parameter):
 
     Attributes:
         default (Optional[Dict]): The default value for the parameter.
-        accepted_values (Optional[Dict]):
-            An iterable of acceptable string values.
     """
 
-    default: Optional[Dict] = field(init=True, repr=True, default_factory=dict)
+    default: Optional[Dict[Any, Any]] = field(
+        init=True, repr=True, default_factory=dict
+    )
 
     @property
-    def param_type(self) -> Type:
+    def param_type(self) -> Type[Any]:
         return Dict
 
     def __post_init__(self):
@@ -656,7 +633,7 @@ class MappingParameter(Parameter):
         if self.default is not None:
             self.set_value(self.default)
 
-    def set_value(self, value: Optional[Iterable]) -> None:
+    def set_value(self, value: Optional[Iterable[Any]]) -> None:
         """
         Sets the value of the Mapping parameter after validating its type and range.
 
@@ -684,151 +661,88 @@ parameter_type_catalogue.register(name="mapping", item=IterableParameter)
 
 @dataclass
 class ParameterManager:
-    """A manager that creates and maintains a mapping
-    of parameters based on the type hints of an input function.
+    """A manager that creates and maintains a mapping of parameters based on provided definitions."""  # noqa: E501
 
-    Attributes:
-        input_function (Callable): The function for which parameters are being managed.
-    """
-
-    input_function: Callable
+    parameter_definitions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    parameters_map: Dict[str, Parameter] = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         """Post-initialization processing to prepare the ParameterManager."""
+        self._validate_parameter_definitions()
+        self.parameters_map = self._create_parameters_map()
 
-        self._check_input_function()
-        self._type_names = self._get_type_names()
-        self._validate_function_parameters()
-        self.parameters_map = self._get_parameters_map()
-
-    def _check_input_function(self):
-        """Checks if the provided input_function is callable.
-
-        Raises:
-            ValueError: If input_function is not callable.
-        """
-        if not callable(self.input_function):
-            raise ValueError("The provided input_function is not callable.")
-
-    def _get_type_names(self) -> Dict[str, str]:
-        type_hints = get_type_hints(self.input_function)
-
-        def get_base_type(th):
-            origin = get_origin(th)
-            if origin is None:
-                return th.__name__ if hasattr(th, "__name__") else str(th)
-            if issubclass(origin, Iterable):
-                return "iterable"
-            if issubclass(origin, Mapping):
-                return "mapping"
-            return origin.__name__
-
-        type_replacement = {
-            "AffineScalarFunc": "ufloat",
-        }
-
-        return {
-            name: type_replacement.get(get_base_type(th), get_base_type(th).lower())
-            for name, th in type_hints.items()
-        }
-
-    def _validate_function_parameters(self):
-        signature = inspect.signature(self.input_function)
-        for name in signature.parameters.keys():
-            if name not in self._type_names:
-                raise ValueError(f"Parameter '{name}' has no type annotation.")
-            type_name = self._type_names[name]
-            if type_name not in parameter_type_catalogue.list_items():
-                raise ValueError(
-                    f"No Parameter class registered for type '{type_name}'."
+    def _validate_parameter_definitions(self):
+        """Validates the provided parameter definitions."""
+        for name, definition in self.parameter_definitions.items():
+            if "type" not in definition:
+                raise ParameterDefinitionError(
+                    f"Parameter '{name}' is missing a type definition."
+                )
+            if definition["type"] not in parameter_type_catalogue.list_items():
+                raise ParameterDefinitionError(
+                    f"No Parameter class registered for type '{definition['type']}'."
                 )
 
-    def _get_parameters_map(self) -> Dict[str, Any]:
-        """Creates a map from parameter names to Parameter instances.
-
-        Returns:
-            A dictionary mapping parameter names
-                to their instantiated Parameter objects.
-        """
-        signature = inspect.signature(self.input_function)
-
+    def _create_parameters_map(self) -> Dict[str, Parameter]:
+        """Creates a map from parameter names to Parameter instances."""
         parameters_map = {}
-        for name, param in signature.parameters.items():
-            type_name = self._type_names[name]
-            parameter_cls = parameter_type_catalogue.get(type_name)
-
+        for name, definition in self.parameter_definitions.items():
+            parameter_cls = parameter_type_catalogue.get(definition["type"])
             kwargs = {"name": name}
-            if param.default is not inspect.Parameter.empty:
-                kwargs["default"] = param.default
-
+            kwargs.update({k: v for k, v in definition.items() if k != "type"})
             parameters_map[name] = parameter_cls(**kwargs)
-
         return parameters_map
 
-    def set_parameter_attributes(self, name: str, attributes: Dict[str, Any]):
-        """Updates properties of a parameter if it exists, excluding its value.
-        The properties of the parameter are updated by creating a new instance of the appropriate parameter class.
-        The properties of the old parameter that are not modified by the update via 'properties'
-        are carried over to the new instance.
-
-        Args:
-            name (str): The name of the parameter to be updated.
-            attributes (dict): A dictionary containing the
-                properties to be updated on the parameter.
-
-        Raises:
-            ValueError: If the parameter with the given name does not exist.
-            ParameterUpdateAttributeWarning: If an attempt is made to update the parameter's value.
-        """  # noqa: E501
+    def set_parameter_attributes(self, name: str, attributes: Dict[str, Any]) -> None:
+        """Updates properties of a parameter if it exists, excluding its value."""
         if name not in self.parameters_map:
-            raise ValueError(f"Parameter '{name}' does not exist.")
+            raise ParameterNotFoundError(f"Parameter '{name}' does not exist.")
 
-        # Get the current parameter
         current_parameter = self.parameters_map[name]
-
-        # Get a dictionary of all existing properties of the parameter
         current_properties = vars(current_parameter)
 
-        # the method does not update the value of the parameter,
-        # so we raise a warning  and remove it
-        # from the properties, if present
         if "value" in attributes:
             warnings.warn(
-                ParameterUpdateAttributeWarning(
-                    "The value of the parameter can not be updated by this method: "
-                    "\n on a Parameter instance use the method parameter.set_value()"
-                    "\n on a parameter manager instance use the wrapper function "
-                    "parameter_manager.set_parameter_value()"
-                    f"\n The value of the parameter  '{name}' will not be updated"
-                )
+                f"Attempt to update 'value' attribute for parameter '{name}' ignored."
+                f" Use set_parameter_value() instead.",
+                ParameterUpdateAttributeWarning,
             )
-        _ = attributes.pop("value", None)
-        _ = current_properties.pop("_value", None)
+            del attributes["value"]
+        if "_value" in current_properties:
+            del current_properties["_value"]
 
-        # Update the current properties with the new ones,
-        # overwriting any that are explicitly provided
-        updated_properties = {**current_properties, **attributes}
+        try:
+            updated_properties = {**current_properties, **attributes}
+            parameter_type = type(current_parameter)
+            updated_parameter = parameter_type(**updated_properties)
+            self.parameters_map[name] = updated_parameter
+        except TypeError as e:
+            raise InvalidParameterAttributeError(
+                f"Invalid attribute for parameter '{name}': {str(e)}"
+            )
 
-        # Instantiate a new parameter object with the merged properties
-        parameter_type = type(current_parameter)
-        updated_parameter = parameter_type(**updated_properties)
-
-        # Update the parameter map with the new parameter object
-        self.parameters_map[name] = updated_parameter
-
-    def set_parameter_value(self, name: str, value: Any):
-        """Sets the value of a parameter if it exists.
-
-        This method changes the value of a parameter without
-        affecting any other attribute or property.
-
-        Args:
-            name (str): The name of the parameter whose value is to be set.
-            value (Any): The new value to set for the parameter.
-
-        Raises:
-            ValueError: If the parameter with the given name does not exist.
-        """
+    def set_parameter_value(self, name: str, value: Any) -> None:
+        """Sets the value of a parameter if it exists."""
         if name not in self.parameters_map:
-            raise ValueError(f"Parameter '{name}' does not exist.")
-        self.parameters_map[name].set_value(value=value)
+            raise ParameterNotFoundError(f"Parameter '{name}' does not exist.")
+        try:
+            self.parameters_map[name].set_value(value=value)
+        except (
+            InvalidParameterTypeError,
+            InvalidBoundaryError,
+            InvalidAcceptedValuesError,
+        ) as e:
+            raise InvalidParameterAttributeError(
+                f"Invalid value for parameter '{name}': {str(e)}"
+            )
+
+    def get_parameters_values(self) -> Dict[str, Any]:
+        """
+        Returns a dictionary with parameter names as keys
+        and their current values as values.
+
+        Returns:
+            Dict[str, Any]: A dictionary of parameter
+            names and their current values.
+        """
+        return {name: param.value for name, param in self.parameters_map.items()}

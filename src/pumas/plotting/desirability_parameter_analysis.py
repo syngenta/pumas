@@ -5,8 +5,6 @@ from pumas.plotting.plotter import plot_parameter_analysis
 
 
 def plot_sigmoid_analysis():
-    func = desirability_catalogue.get("sigmoid")().utility_function
-
     reference_coefficient_parameters = {
         "low": 20.0,
         "high": 80.0,
@@ -23,22 +21,22 @@ def plot_sigmoid_analysis():
         {
             "parameter_name": "high",
             "title": "High Threshold",
-            "values": [20, 30, 40, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
+            "values": [20., 30., 40., 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
         },
         {
             "parameter_name": "k",
             "title": "K (Positive)",
-            "values": [0.0, 0.1, 0.3, 0.5, 1.0, 10.0],
+            "values": [0.0, 0.1, 0.3, 0.5, 1.0],
         },
         {
             "parameter_name": "k",
             "title": "K (Negative)",
-            "values": [-10.0, -1.0, -0.5, -0.3, -0.1, 0.0],
+            "values": [-1.0, -0.5, -0.3, -0.1, 0.0],
         },
         {
             "parameter_name": "base",
             "title": "Base",
-            "values": [1.5, 2.0, np.e, 3.0, 10.0],
+            "values": [1.5, 2.0, np.e, 3.0],
         },
         {
             "parameter_name": "shift",
@@ -48,7 +46,7 @@ def plot_sigmoid_analysis():
     ]
 
     plot_parameter_analysis(
-        func=func,
+        desirability_class=desirability_catalogue.get("sigmoid"),
         parameters=parameters,
         reference_coefficient_parameters=reference_coefficient_parameters,
         vertical_lines_x_values=[20.0, 50.0, 80.0],
@@ -58,8 +56,6 @@ def plot_sigmoid_analysis():
 
 
 def plot_double_sigmoid_analysis():
-    func = desirability_catalogue.get("double_sigmoid")().utility_function
-
     reference_coefficient_parameters = {
         "low": 20.0,
         "high": 80.0,
@@ -106,7 +102,7 @@ def plot_double_sigmoid_analysis():
         },
     ]
     plot_parameter_analysis(
-        func=func,
+        desirability_class=desirability_catalogue.get("double_sigmoid"),
         parameters=parameters,
         reference_coefficient_parameters=reference_coefficient_parameters,
         vertical_lines_x_values=[20.0, 50.0, 80.0],
@@ -116,7 +112,6 @@ def plot_double_sigmoid_analysis():
 
 
 def plot_sigmoid_bell_analysis():
-    func = desirability_catalogue.get("sigmoid_bell")().utility_function
     reference_coefficient_parameters = {
         "x1": 20.0,
         "x4": 80.0,
@@ -168,7 +163,7 @@ def plot_sigmoid_bell_analysis():
     ]
 
     plot_parameter_analysis(
-        func=func,  # Replace with actual function name
+        desirability_class=desirability_catalogue.get("sigmoid_bell"),
         parameters=parameters,
         reference_coefficient_parameters=reference_coefficient_parameters,
         vertical_lines_x_values=[20.0, 80.0],  # x_left and x_right
@@ -178,7 +173,6 @@ def plot_sigmoid_bell_analysis():
 
 
 def plot_bell_analysis():
-    func = desirability_catalogue.get("bell")().utility_function
     reference_coefficient_parameters = {
         "width": 20.0,
         "slope": 2.0,
@@ -220,7 +214,7 @@ def plot_bell_analysis():
     ]
 
     plot_parameter_analysis(
-        func=func,
+        desirability_class=desirability_catalogue.get("bell"),
         parameters=parameters,
         reference_coefficient_parameters=reference_coefficient_parameters,
         vertical_lines_x_values=[20.0, 50.0, 80.0],
@@ -230,7 +224,6 @@ def plot_bell_analysis():
 
 
 def plot_multistep_analysis():
-    func = desirability_catalogue.get("multistep")().utility_function
     reference_coefficient_parameters = {
         "coordinates": [(50.0, 0.0), (51.0, 0.8)],
     }
@@ -277,7 +270,7 @@ def plot_multistep_analysis():
         },
     ]
     plot_parameter_analysis(
-        func=func,
+        desirability_class=desirability_catalogue.get("multistep"),
         reference_coefficient_parameters=reference_coefficient_parameters,
         parameters=parameters,
         vertical_lines_x_values=[20.0, 50.0, 80.0],
@@ -288,7 +281,6 @@ def plot_multistep_analysis():
 
 
 def plot_leftstep_analysis():
-    func = desirability_catalogue.get("leftstep")().utility_function
     reference_coefficient_parameters = {
         "low": 50.0,
         "high": 50.0,
@@ -307,7 +299,7 @@ def plot_leftstep_analysis():
         },
     ]
     plot_parameter_analysis(
-        func=func,
+        desirability_class=desirability_catalogue.get("leftstep"),
         reference_coefficient_parameters=reference_coefficient_parameters,
         parameters=parameters,
         vertical_lines_x_values=[20.0, 50.0, 80.0],
@@ -318,7 +310,6 @@ def plot_leftstep_analysis():
 
 
 def plot_rightstep_analysis():
-    func = desirability_catalogue.get("rightstep")().utility_function
     reference_coefficient_parameters = {
         "low": 50.0,
         "high": 50.0,
@@ -337,7 +328,7 @@ def plot_rightstep_analysis():
         },
     ]
     plot_parameter_analysis(
-        func=func,
+        desirability_class=desirability_catalogue.get("rightstep"),
         reference_coefficient_parameters=reference_coefficient_parameters,
         parameters=parameters,
         vertical_lines_x_values=[20.0, 50.0, 80.0],
@@ -348,7 +339,6 @@ def plot_rightstep_analysis():
 
 
 def plot_step_analysis():
-    func = desirability_catalogue.get("step")().utility_function
     reference_coefficient_parameters = {
         "low": 20.0,
         "high": 80.0,
@@ -372,7 +362,7 @@ def plot_step_analysis():
         },
     ]
     plot_parameter_analysis(
-        func=func,
+        desirability_class=desirability_catalogue.get("step"),
         reference_coefficient_parameters=reference_coefficient_parameters,
         parameters=parameters,
         vertical_lines_x_values=[20.0, 50.0, 80.0],

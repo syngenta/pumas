@@ -11,7 +11,7 @@ The `ufloat` function yield UFloat instances by providing a nominal value and a 
 The calculations done with this package will propagate the uncertainties to the result of mathematical calculations.
 
 
->>> from pumas.error_propagation.uncertainties import ufloat
+>>> from pumas.uncertainty.uncertainties_wrapper import ufloat
 >>> x = ufloat(nominal_value=2, std_dev=0.1)   # x = 2+/-0.1
 >>> y = ufloat(nominal_value=3, std_dev=0.2)   # y = 3+/-0.2
 >>> print(2*x)
@@ -43,7 +43,7 @@ The uncertainties package correctly takes into account the fact that the two qua
 
 The uncertainties package natively provides convenience methods to construct UFloat instances from strings:
 
->>> from mpstk.error_propagation.uncertainties import ufloat_from_str # this is a wrapper around the package's ufloat_fromstr function
+>>> from pumas.uncertainty.uncertainties_wrapper import ufloat_from_str # this is a wrapper around the package's ufloat_fromstr function
 >>> x = ufloat_from_str("1.0+/-0.1")
 >>> print(x)
 1.00+/-0.10
@@ -52,7 +52,7 @@ In addition to construct UFloat instances from strings, the module provides a me
 
 Assing a zero uncertainty to a float value:
 
->>> from mpstk.error_propagation.uncertainties import ufloat_from_float
+>>> from pumas.uncertainty.uncertainties_wrapper import ufloat_from_float
 >>> x = ufloat_from_float(1.0, method="zero_uncertainty")
 >>> print(x)
 1.0+/-0
@@ -87,9 +87,12 @@ The module provides a mechanism to extend the conversion methods by implementing
 from abc import ABC, abstractmethod
 
 from uncertainties import UFloat, ufloat
-from uncertainties import ufloat_fromstr as ufloat_from_str  # noqa: F401
+from uncertainties import ufloat_fromstr as ufloat_from_str
+from uncertainties import umath
 
 from pumas.architecture.catalogue import Catalogue
+
+__all__ = ["UFloat", "ufloat", "ufloat_from_str", "ufloat_from_float", "umath"]
 
 
 class Converter(ABC):
