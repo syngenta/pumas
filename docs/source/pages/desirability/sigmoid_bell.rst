@@ -1,10 +1,12 @@
 Sigmoid Bell
 ===========================
 
-High-level Class interface
-----------------------------
+
 .. autoclass:: pumas.desirability.sigmoid_bell.SigmoidBell
-    :noindex:
+    :members:
+
+.. autoclass:: pumas.desirability.sigmoid_bell.sigmoid_bell
+    :members:
 
 
 Parameter Analysis

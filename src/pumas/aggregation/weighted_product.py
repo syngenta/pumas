@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import numpy as np
 
@@ -25,47 +25,43 @@ def compute_ufloat_weighted_product(
 
 class WeightedProductAggregation(BaseAggregation):
     """
-    Computes the weighted product of a set of values with corresponding weights.
+     Computes the weighted product of a set of values with corresponding weights.
 
-    .. math::
+     .. math::
 
-        A = \\prod_{i=1}^{n} x_i^{w_i}
+         A = \\prod_{i=1}^{n} x_i^{w_i}
 
-    Where:
-        - :math:`P` is the weighted product
-        - :math:`x_i` is each value in the values array
-        - :math:`w_i` is the weight for each value :math:`x_i`
-        - :math:`n` is the number of elements in values and weights arrays
+     Where:
+         - :math:`P` is the weighted product
+         - :math:`x_i` is each value in the values array
+         - :math:`w_i` is the weight for each value :math:`x_i`
+         - :math:`n` is the number of elements in values and weights arrays
 
-    Example:
-    >>> from pumas.aggregation import aggregation_catalogue
+    Usage Example:
 
-    >>> aggregator_class = aggregation_catalogue.get("product")
+     >>> from pumas.aggregation import aggregation_catalogue
 
-    >>> aggregator = aggregator_class()
+     >>> aggregator_class = aggregation_catalogue.get("product")
 
-    >>> values = [1.0, 2.0, 3.0]
-    >>> weights = [0.2, 0.3, 0.5]
-    >>> result = aggregator.compute_numeric(values=values, weights=weights)
-    >>> print(f"{result:.2f}")
-    2.13
+     >>> aggregator = aggregator_class()
 
-    >>> result = aggregator(values=values, weights=weights) # Same as compute_numeric
-    >>> print(f"{result:.2f}")
-    2.13
+     >>> values = [1.0, 2.0, 3.0]
+     >>> weights = [0.2, 0.3, 0.5]
+     >>> result = aggregator.compute_numeric(values=values, weights=weights)
+     >>> print(f"{result:.2f}")
+     2.13
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
-    >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
-    >>> weights = [0.2, 0.3, 0.5]
-    >>> result = aggregator.compute_ufloat(values=values, weights=weights)
-    >>> print(result)
-    2.13+/-0.13
+     >>> result = aggregator(values=values, weights=weights) # Same as compute_numeric
+     >>> print(f"{result:.2f}")
+     2.13
+
+     >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+     >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
+     >>> weights = [0.2, 0.3, 0.5]
+     >>> result = aggregator.compute_ufloat(values=values, weights=weights)
+     >>> print(result)
+     2.13+/-0.13
     """  # noqa E501
-
-    def __init__(self, params: Optional[Dict[str, Any]] = None):
-        super().__init__()
-        self._set_parameter_definitions({})
-        self._validate_and_set_parameters(params)
 
     def compute_numeric(
         self, values: List[float], weights: Optional[List[float]] = None

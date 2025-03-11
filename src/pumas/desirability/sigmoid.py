@@ -76,8 +76,6 @@ def sigmoid(
     Returns:
         Union[float, UFloat]: The result of the sigmoid function.
 
-    Raises:
-        ValueError: If base is less than or equal to 1, or if high is less than low.
     """
     # neet to implement in the parameter definition the le and ge conditions
     if base <= 1:
@@ -128,11 +126,12 @@ class Sigmoid(Desirability):
     This class implements a sigmoid desirability function with adjustable parameters.
     It provides methods to compute the desirability for both numeric and uncertain float inputs.
 
-    The `sigmoid(x)` is defined as:
+    Mathematical Definition:
+    The sigmoid function is defined as:
 
     .. math::
 
-        {sigmoid}(x) = \\frac{1}{1 + {base}^{-arg}} * (1 - {shift}) + {shift}
+        F(x) = \\frac{1}{1 + {base}^{-arg}} * (1 - {shift}) + {shift}
 
     Where the  `arg` term is calculated as:
 
@@ -140,24 +139,35 @@ class Sigmoid(Desirability):
 
         {arg} = \\frac{10 * k * (x - \\frac{{low} + {high}}{2})}{{high} - {low}}
 
-    Where:
-        * x is the input value.
-        * low and high define the range within which the sigmoid transitions from near 0 to near 1.
-        * k determines the steepness of the sigmoid curve. A positive slope gives an upward sigmoid, and a negative slope gives a downward sigmoid.
-        * base determines the base of the exponential function, with base=10 for a base-10 exponential.
-        * shift vertically shifts the sigmoid curve. A shift of 0 means the curve ranges from 0 to 1. Positive shifts move the curve upwards maintaining the range within 1. negative shifts are not allowed.
+    Implementation Details:
+
+    The sigmoid function uses two different implementations based on the input parameters:
+
+    1. Hard Sigmoid: When `high` equals `low`, a hard sigmoid function is used, which
+       returns 1.0 if `k * x > 0`, and 0.0 otherwise.
+
+    2. Stable Sigmoid: For all other cases, a numerically stable sigmoid implementation
+       is used. This implementation avoids overflow errors for large positive or negative
+       inputs by using different formulas based on the sign of the intermediate calculation.
+
+    The choice between these implementations is made automatically based on the input
+    parameters, ensuring accurate and stable results across a wide range of inputs.
+
+    Parameters:
+        params (Optional[Dict[str, Any]]): Initial parameters for the sigmoid function. Defaults to None.
+
+    Attributes:
+        low (float): The lower bound of the sigmoid range.
+        high (float): The upper bound of the sigmoid range.
+        k (float): The slope parameter, range [-1.0, 1.0], default 0.5.
+        base (float): The base of the exponential function, range (1.0, 10.0], default 10.0.
+        shift (float): The vertical shift of the sigmoid, range [0.0, 1.0], default 0.0.
 
 
-    Args:
-        params (Optional[Dict[str, Any]], optional): Initial parameters for the sigmoid function.
-            Defaults to None.
-
-    The sigmoid function parameters are:
-        - low (float): The lower bound of the sigmoid range.
-        - high (float): The upper bound of the sigmoid range.
-        - k (float): The slope parameter, range [-1.0, 1.0], default 0.5.
-        - base (float): The base of the exponential function, range [1.0, 10.0], default 10.0.
-        - shift (float): The vertical shift of the sigmoid, range [0.0, 1.0], default 0.0.
+    Raises:
+        InvalidBoundaryError: If base is less than or equal to 1, or if high is less than low.
+        InvalidParameterTypeError: If any parameter is of an invalid type.
+        ParameterValueNotSet: If any required parameter is not set.
 
 
     Usage Example:
@@ -186,6 +196,12 @@ class Sigmoid(Desirability):
     """  # noqa: E501
 
     def __init__(self, params: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the Sigmoid desirability function.
+
+        Args:
+            params (Optional[Dict[str, Any]]): Initial parameters for the sigmoid function.
+        """  # noqa: E501
         super().__init__()
         self._set_parameter_definitions(
             {
@@ -210,16 +226,16 @@ class Sigmoid(Desirability):
 
     def compute_numeric(self, x: float) -> float:
         """
-        Compute the sigmoid desirability for a numeric input.
+        Compute the sigmoid desirability for an uncertain float input.
 
         Args:
-            x (float): The input value.
+            x (UFloat): The uncertain float input value.
 
         Returns:
-            float: The computed desirability value.
+            UFloat: The computed desirability value with uncertainty.
 
         Raises:
-            InvalidParameterTypeError: If the input is not a float.
+            InvalidParameterTypeError: If the input is not a UFloat.
             ParameterValueNotSet: If any required parameter is not set.
         """
         self._validate_input(x, float)

@@ -35,7 +35,12 @@ def plot_subplot(
     # Plot reference
     if plot_reference:
         y_values_ref = np.array(
-            [desirability_class(params=reference_coefficient_parameters).compute_numeric(x=xi) for xi in x_values]
+            [
+                desirability_class(
+                    params=reference_coefficient_parameters
+                ).compute_numeric(x=xi)
+                for xi in x_values
+            ]
         )
         ref_def = f"Ref.: ({param_name}={reference_coefficient_parameters[param_name]})"
 
@@ -53,7 +58,12 @@ def plot_subplot(
         coefficient_parameters = reference_coefficient_parameters.copy()
         coefficient_parameters[param_name] = param_value
 
-        y_values = np.array([desirability_class(params=coefficient_parameters).compute_numeric(x=xi) for xi in x_values])
+        y_values = np.array(
+            [
+                desirability_class(params=coefficient_parameters).compute_numeric(x=xi)
+                for xi in x_values
+            ]
+        )
         ax.plot(x_values, y_values, label=f"{param_name}={param_value}", linewidth=4)
 
     # Plot points

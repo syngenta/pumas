@@ -1,10 +1,14 @@
 Multistep
 =====================
 
-High-level Class interface
-----------------------------
 .. autoclass:: pumas.desirability.multistep.MultiStep
-    :noindex:
+    :members:
+
+.. autoclass:: pumas.desirability.multistep.multistep
+    :members:
+
+.. autoclass:: pumas.desirability.multistep.interpolate
+    :members:
 
 
 Parameter Analysis

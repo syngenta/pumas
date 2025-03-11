@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import numpy as np
 
@@ -40,7 +40,8 @@ class WeightedArithmeticMeanAggregation(BaseAggregation):
         - :math:`n` is the number of elements in values and weights arrays
 
 
-    Example:
+    Usage Example:
+
     >>> from pumas.aggregation import aggregation_catalogue
 
     >>> aggregator_class = aggregation_catalogue.get("arithmetic_mean")
@@ -64,11 +65,6 @@ class WeightedArithmeticMeanAggregation(BaseAggregation):
     >>> print(result)
     2.30+/-0.16
     """
-
-    def __init__(self, params: Optional[Dict[str, Any]] = None):
-        super().__init__()
-        self._set_parameter_definitions({})
-        self._validate_and_set_parameters(params)
 
     def compute_numeric(
         self, values: List[float], weights: Optional[List[float]] = None

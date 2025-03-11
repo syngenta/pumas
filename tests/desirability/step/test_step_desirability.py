@@ -26,8 +26,25 @@ def test_retrieved_desirability_is_not_a_global(name):
     assert id(desirability_1) != id(desirability_2)
 
 
-@pytest.mark.parametrize("name", ["step", "leftstep", "rightstep"])
-def test_step_parameters_after_initialization(name):
+@pytest.mark.parametrize("name", ["step"])
+def test_central_step_parameters_after_initialization(name):
+    desirability_class = desirability_catalogue.get(name)
+    desirability_instance = desirability_class()
+    desirability = desirability_instance
+
+    desirability.set_parameters_values(
+        {"low": 1.0, "high": 2.0, "invert": False, "shift": 0.1}
+    )
+    assert desirability.get_parameters_values() == {
+        "low": 1.0,
+        "high": 2.0,
+        "invert": False,
+        "shift": 0.1,
+    }
+
+
+@pytest.mark.parametrize("name", ["leftstep", "rightstep"])
+def test_r_l_step_parameters_after_initialization(name):
     desirability_class = desirability_catalogue.get(name)
     desirability_instance = desirability_class()
     desirability = desirability_instance

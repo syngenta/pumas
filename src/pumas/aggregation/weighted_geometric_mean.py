@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import numpy as np
 
@@ -33,16 +33,16 @@ class WeightedGeometricMeanAggregation(BaseAggregation):
 
     .. math::
 
-        G = \\left(\\prod_{i=1}^{n} x_i^{w_i} \\right)^{\\frac{1}{\\sum_{i=1}^{n} w_i}}
+        A = \\left(\\prod_{i=1}^{n} x_i^{w_i} \\right)^{\\frac{1}{\\sum_{i=1}^{n} w_i}}
 
     Where:
-        - :math:`G` is the weighted arithmetic mean
+        - :math:`A` is the weighted arithmetic mean
         - :math:`x_i` is each value in the values array
         - :math:`w_i` is the weight corresponding to each value :math:`x_i`
         - :math:`n` is the number of elements in values and weights arrays
 
 
-    Example:
+    Usage Example:
 
 
     >>> from pumas.aggregation import aggregation_catalogue
@@ -68,11 +68,6 @@ class WeightedGeometricMeanAggregation(BaseAggregation):
     >>> print(result)
     2.13+/-0.13
     """
-
-    def __init__(self, params: Optional[Dict[str, Any]] = None):
-        super().__init__()
-        self._set_parameter_definitions({})
-        self._validate_and_set_parameters(params)
 
     def compute_numeric(
         self, values: List[float], weights: Optional[List[float]] = None

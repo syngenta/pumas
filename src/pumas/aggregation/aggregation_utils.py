@@ -188,19 +188,44 @@ def fill_weights(values: List[Any], weights: Optional[List[Any]]) -> List[Any]:
 def run_data_validation_pipeline(
     values: List[Any], weights: Optional[List[Any]]
 ) -> Tuple[List[Any], List[Any]]:
-    """Run the data_frame validation pipeline on 'values' and 'weights'.
+    """
+    Run the data validation pipeline on 'values' and 'weights'.
 
-    Data validation includes checking the length match, reporting null
-    values/weights, filtering out null pairs, and checking negative values/weights.
+    This function performs a series of checks and transformations on the input data
+    to ensure it meets the requirements for aggregation operations. The pipeline
+    includes the following steps:
+
+    1. If weights are not provided, create an array of 1.0 for each value
+    2. Check if the length of values and weights match
+    3. Report (warn) about null values and weights
+    4. Filter out pairs where either value or weight is null
+    5. Check for remaining null weights or values (raise exception if found)
+    6. Check for negative weights or values (raise exception if found)
 
     Args:
-        values (List): The values to be aggregated.
-        weights (List): The weights corresponding to the values.
+        values (List[Any]): The values to be aggregated.
+        weights (Optional[List[Any]]): The weights corresponding to the values.
+            If None, weights will be filled with 1.0 for each value.
 
     Returns:
-        List, List: Validated and possibly filtered 'values' and 'weights'.
+        Tuple[List[Any], List[Any]]: A tuple containing the validated and possibly
+        filtered 'values' and 'weights'.
 
-    """
+    Raises:
+        AggregationValuesToWeightLengthMismatchException: If the length of values and weights don't match.
+        AggregationNullWeightsException: If any weight is null or NaN after filtering.
+        AggregationNullValuesException: If any value is null or NaN after filtering.
+        AggregationNegativeWeightsException: If any weight is negative.
+        AggregationNegativeValuesException: If any value is negative.
+
+    Warnings:
+        AggregationNullValuesWarning: If null or NaN values are found in the input.
+        AggregationNullWeightsWarning: If null or NaN weights are found in the input.
+
+    Note:
+        This function modifies the input data by filtering out null pairs. The returned
+        lists may be shorter than the input lists if null values were present and removed.
+    """  # noqa: E501
     weights = fill_weights(values=values, weights=weights)
     check_length_match(values=values, weights=weights)
     report_null_values(values=values)

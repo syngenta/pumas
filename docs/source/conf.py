@@ -13,7 +13,7 @@ author = "Marco Stenta"
 show_authors = True
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-modindex_common_prefix = ["mpstk."]
+modindex_common_prefix = ["pumas."]
 
 extensions = [
     "sphinx.ext.autodoc",

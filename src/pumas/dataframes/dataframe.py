@@ -14,7 +14,7 @@ Simple Usage Examples:
 
 The module can be imported as follows:
 
->>> from mpstk.dataframes.dataframe import DataFrame
+>>> from pumas.dataframes.dataframe import DataFrame
 
 The data_frame can be provided as a list of dictionaries.
 Each dictionary in the list represents an item and contributes a row to the data_frame frame;

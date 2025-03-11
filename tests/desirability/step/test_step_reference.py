@@ -64,7 +64,7 @@ def test_rightstep_equivalence_to_func_reference(x, low, high):
 def test_step_equivalence_to_func_reference(x, low, high):
 
     utility_function = compute_numeric_step
-    params = {"low": low, "high": high, "shift": 0.0}
+    params = {"low": low, "high": high, "invert": False, "shift": 0.0}
 
     y = utility_function(x=x, **params)
     y = np.float32(y)

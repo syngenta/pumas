@@ -97,14 +97,11 @@ def get_bell_slope_pivot_points(
 
 class Bell(Desirability):
     """
-    Bell desirability function implementation as a membership degree of `x` in a general bell-shaped fuzzy membership function.
+    Bell desirability function implementation.
 
-    The bell-shaped membership function is defined by three parameters: `width`, `slope`, and `center`,
-    where `width` controls the width (parameter 'a'), `slope` is a slope parameter (parameter 'b'),
-    and `center` is the center of the curve (parameter 'c'). An additional parameter `shift` vertically
-    displaces the curve.
+    Mathematical Definition:
 
-    The mathematical representation of the bell-shaped function including an upward shift is as follows:
+    The bell function is defined as:
 
     .. math::
 
@@ -119,16 +116,16 @@ class Bell(Desirability):
         * `shift` is the vertical shift applied to the entire curve, ranging from 0 (no shift) to 1 (maximum shift).
 
 
-    Args:
-        params (Optional[Dict[str, Any]], optional): Initial parameters for the bell function.
-            Defaults to None.
+    Parameters:
+        params (Optional[Dict[str, Any]]): Initial parameters for the sigmoid function. Defaults to None.
 
-    The bell function parameters are:
-        - width (float): The width parameter of the bell curve, controls the horizontal spread (width > 0).
-        - slope (float): The slope parameter of the bell curve, controls the steepness of the curve's sides.
-        - center (float): The center of the bell curve, indicates the `x` value at the highest point of the curve (peak).
-        - invert (bool): If True, the curve is inverted, i.e., the membership degree decreases as `x` approaches the center.
-        - shift (float): The vertical shift applied to the entire curve, ranging from 0 (no shift) to 1 (maximum shift).
+
+    Attributes:
+        width (float): The width parameter of the bell curve, controls the horizontal spread (width > 0).
+        slope (float): The slope parameter of the bell curve, controls the steepness of the curve's sides.
+        center (float): The center of the bell curve, indicates the `x` value at the highest point of the curve (peak).
+        invert (bool): If True, the curve is inverted, i.e., the desirability decreases as `x` approaches the center.
+        shift (float): The vertical shift applied to the entire curve, ranging from 0 (no shift) to 1 (maximum shift).
 
     Usage Example:
 
@@ -156,6 +153,12 @@ class Bell(Desirability):
     """  # noqa: E501
 
     def __init__(self, params: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the Bell desirability function.
+
+        Args:
+            params (Optional[Dict[str, Any]]): Initial parameters for the sigmoid function.
+        """  # noqa: E501
         super().__init__()
         self._set_parameter_definitions(
             {

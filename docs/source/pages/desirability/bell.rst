@@ -1,10 +1,10 @@
 Bell
 ===========================
-
-High-level Class interface
-----------------------------
 .. autoclass:: pumas.desirability.bell.Bell
-    :noindex:
+    :members:
+
+.. autoclass:: pumas.desirability.bell.bell
+    :members:
 
 
 Parameter Analysis

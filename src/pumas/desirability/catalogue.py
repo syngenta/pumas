@@ -1,7 +1,6 @@
 from pumas.architecture.catalogue import Catalogue
 from pumas.desirability.base_models import Desirability
 from pumas.desirability.bell import Bell
-from pumas.desirability.category import CategoryDesirability
 from pumas.desirability.double_sigmoid import DoubleSigmoid
 from pumas.desirability.multistep import MultiStep
 from pumas.desirability.sigmoid import Sigmoid
@@ -27,8 +26,6 @@ desirability_catalogue.register(name="leftstep", item=LeftStep)
 desirability_catalogue.register(name="rightstep", item=RightStep)
 
 desirability_catalogue.register(name="step", item=Step)
-
-desirability_catalogue.register(name="category", item=CategoryDesirability)
 
 desirability_catalogue.register(name="value_mapping", item=ValueMapping)
 

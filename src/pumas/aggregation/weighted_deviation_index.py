@@ -38,50 +38,56 @@ def compute_ufloat_weighted_deviation_index(
 
 class WeightedDeviationIndexAggregation(BaseAggregation):
     """
-    Computes the weighted deviation index of a set of values with corresponding weights.
+     Computes the weighted deviation index of a set of values with corresponding weights.
 
-    This approach to aggregations combines multiple values while accounting for their deviation from an ideal reference value.
-    This method evaluates the overall score by penalizing the squared deviation of each value from the specified
-    ideal value, amplifying the importance of each deviation by the associated weight. It is designed to be
-    insensitive to the amount of data, i.e., it works for varying numbers of criteria and is robust to missing data
-    by adjusting the dimensionality of the analysis based on the available data_frame.
-
-
-    .. math::
-
-        D = 1 - \\sqrt{\\frac{\\sum{w_i^2 (x_{\\text{ideal}} - x_i)^2}}{\\sum{w_i^2}}}
-
-    Where:
-        - :math:`D` is the weighted deviation index
-        - :math:`x_i` are the values
-        - :math:`w_i` are the corresponding weights for each value
-        - :math:`{x_\\text{ideal}}` is the ideal value
-        - Both :math:`x_i` and :math:`w_i` must be non-negative, and :math:`x_i` must not exceed :math:`ideal`.
+     This approach to aggregations combines multiple values while accounting for their deviation from an ideal reference value.
+     This method evaluates the overall score by penalizing the squared deviation of each value from the specified
+     ideal value, amplifying the importance of each deviation by the associated weight. It is designed to be
+     insensitive to the amount of data, i.e., it works for varying numbers of criteria and is robust to missing data
+     by adjusting the dimensionality of the analysis based on the available data_frame.
 
 
-    Example:
-    >>> from pumas.aggregation import aggregation_catalogue
+     .. math::
 
-    >>> aggregator_class = aggregation_catalogue.get("deviation_index")
+         D = 1 - \\sqrt{\\frac{\\sum{w_i^2 (x_{\\text{ideal}} - x_i)^2}}{\\sum{w_i^2}}}
 
-    >>> aggregator = aggregator_class()
+     Where:
+         - :math:`D` is the weighted deviation index
+         - :math:`x_i` are the values
+         - :math:`w_i` are the corresponding weights for each value
+         - :math:`{x_\\text{ideal}}` is the ideal value
+         - Both :math:`x_i` and :math:`w_i` must be non-negative, and :math:`x_i` must not exceed :math:`ideal`.
 
-    >>> values = [1.0, 2.0, 3.0]
-    >>> weights = [0.2, 0.3, 0.5]
-    >>> result = aggregator.compute_numeric(values=values, weights=weights)
-    >>> print(f"{result:.2f}")
-    -0.69
+     Parameters:
+         params (Optional[Dict[str, Any]]): Initial parameters for the double sigmoid function. Defaults to None.
 
-    >>> result = aggregator(values=values, weights=weights) # Same as compute_numeric
-    >>> print(f"{result:.2f}")
-    -0.69
+     Attributes:
+         x_ideal (float): is the ideal value. Deafults to 1.0.
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
-    >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
-    >>> weights = [0.2, 0.3, 0.5]
-    >>> result = aggregator.compute_ufloat(values=values, weights=weights)
-    >>> print(result)
-    -0.69+/-0.23
+    Usage Example:
+
+     >>> from pumas.aggregation import aggregation_catalogue
+
+     >>> aggregator_class = aggregation_catalogue.get("deviation_index")
+
+     >>> aggregator = aggregator_class()
+
+     >>> values = [1.0, 2.0, 3.0]
+     >>> weights = [0.2, 0.3, 0.5]
+     >>> result = aggregator.compute_numeric(values=values, weights=weights)
+     >>> print(f"{result:.2f}")
+     -0.69
+
+     >>> result = aggregator(values=values, weights=weights) # Same as compute_numeric
+     >>> print(f"{result:.2f}")
+     -0.69
+
+     >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+     >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
+     >>> weights = [0.2, 0.3, 0.5]
+     >>> result = aggregator.compute_ufloat(values=values, weights=weights)
+     >>> print(result)
+     -0.69+/-0.23
     """  # noqa: E501
 
     def __init__(self, params: Optional[Dict[str, Any]] = None):

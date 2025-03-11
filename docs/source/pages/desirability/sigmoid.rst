@@ -1,11 +1,13 @@
 Sigmoid
 =====================
-
-High-level Class interface
-----------------------------
 .. autoclass:: pumas.desirability.sigmoid.Sigmoid
-    :noindex:
+    :members:
 
+.. autoclass:: pumas.desirability.sigmoid.hard_sigmoid
+    :members:
+
+.. autoclass:: pumas.desirability.sigmoid.stable_sigmoid
+    :members:
 
 Parameter Analysis
 ---------------------

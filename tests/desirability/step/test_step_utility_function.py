@@ -25,19 +25,45 @@ def desirability_utility_function_step():
 @pytest.mark.parametrize(
     "name, x, low, high, expected",
     [
-        ("leftstep", 0.5, 1.0, 2.0, 1.0),
-        ("leftstep", 1.5, 1.0, 2.0, 0.0),
-        ("rightstep", 2.5, 1.0, 2.0, 1.0),
-        ("rightstep", 1.5, 1.0, 2.0, 0.0),
         ("step", 1.5, 1.0, 2.0, 1.0),
         ("step", 0.5, 1.0, 2.0, 0.0),
         ("step", 2.5, 1.0, 2.0, 0.0),
     ],
 )
-def test_step_functions_basic(
+def test_central_step_functions_basic(
+    desirability_utility_function_step,
+    name,
+    x,
+    low,
+    high,
+    expected,
+):
+    """
+    Test basic functionality of all step functions.
+
+    Hypothesis:
+    - Middle step should return 1 when low <= x <= high, 0 otherwise.
+    """  # noqa: E501
+    utility_functions = {
+        "step": desirability_utility_function_step,
+    }
+    assert utility_functions[name](
+        x, low=low, high=high, invert=False
+    ) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "name, x, low, high, expected",
+    [
+        ("leftstep", 0.5, 1.0, 2.0, 1.0),
+        ("leftstep", 1.5, 1.0, 2.0, 0.0),
+        ("rightstep", 2.5, 1.0, 2.0, 1.0),
+        ("rightstep", 1.5, 1.0, 2.0, 0.0),
+    ],
+)
+def test_r_l_step_functions_basic(
     desirability_utility_function_leftstep,
     desirability_utility_function_rightstep,
-    desirability_utility_function_step,
     name,
     x,
     low,
@@ -55,7 +81,6 @@ def test_step_functions_basic(
     utility_functions = {
         "leftstep": desirability_utility_function_leftstep,
         "rightstep": desirability_utility_function_rightstep,
-        "step": desirability_utility_function_step,
     }
     assert utility_functions[name](x, low=low, high=high) == pytest.approx(expected)
 
@@ -96,12 +121,54 @@ def test_step_functions_unused_param(
 @pytest.mark.parametrize(
     "name, x_values",
     [
-        ("leftstep", [0.5, 1.0, 1.5]),
-        ("rightstep", [1.5, 2.0, 2.5]),
         ("step", [0.5, 1.5, 2.5]),
     ],
 )
-def test_step_functions_shift_impact(
+def test_central_step_functions_shift_impact(
+    desirability_utility_function_step,
+    name,
+    x_values,
+):
+    """
+    Test the impact of the shift parameter on step functions.
+
+    Hypothesis:
+    1. When shift is 0, the function should behave normally.
+    2. When shift is applied:
+       a) All output values should be >= shift value
+       b) Values that were 0 with no shift should now be exactly the shift value
+       c) Values that were 1 with no shift should be scaled towards 1
+    """  # noqa: E501
+    utility_functions = {
+        "step": desirability_utility_function_step,
+    }
+    low, high = 1.0, 2.0
+    shift_value = 0.2
+
+    for x in x_values:
+        unshifted = utility_functions[name](
+            x, low=low, high=high, invert=False, shift=0.0
+        )
+        shifted = utility_functions[name](
+            x, low=low, high=high, invert=False, shift=shift_value
+        )
+
+        assert (
+            shifted >= shift_value
+        ), f"Shifted value {shifted} not >= shift value {shift_value}"
+        assert (
+            shifted >= unshifted
+        ), f"Shifted value {shifted} not >= unshifted value {unshifted}"
+
+
+@pytest.mark.parametrize(
+    "name, x_values",
+    [
+        ("leftstep", [0.5, 1.0, 1.5]),
+        ("rightstep", [1.5, 2.0, 2.5]),
+    ],
+)
+def test_r_l_step_functions_shift_impact(
     desirability_utility_function_leftstep,
     desirability_utility_function_rightstep,
     desirability_utility_function_step,
@@ -121,7 +188,6 @@ def test_step_functions_shift_impact(
     utility_functions = {
         "leftstep": desirability_utility_function_leftstep,
         "rightstep": desirability_utility_function_rightstep,
-        "step": desirability_utility_function_step,
     }
     low, high = 1.0, 2.0
     shift_value = 0.2

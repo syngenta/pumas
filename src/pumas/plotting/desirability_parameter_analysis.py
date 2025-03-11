@@ -21,7 +21,7 @@ def plot_sigmoid_analysis():
         {
             "parameter_name": "high",
             "title": "High Threshold",
-            "values": [20., 30., 40., 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
+            "values": [20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
         },
         {
             "parameter_name": "k",
@@ -342,6 +342,7 @@ def plot_step_analysis():
     reference_coefficient_parameters = {
         "low": 20.0,
         "high": 80.0,
+        "invert": False,
         "shift": 0.0,
     }
     parameters = [
@@ -354,6 +355,11 @@ def plot_step_analysis():
             "parameter_name": "high",
             "title": "high",
             "values": [60.0, 70.0, 80.0],
+        },
+        {
+            "parameter_name": "invert",
+            "title": "Invert",
+            "values": [True, False],
         },
         {
             "parameter_name": "shift",

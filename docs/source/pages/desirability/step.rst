@@ -1,26 +1,13 @@
-Simple Step
+Step
 =====================
+.. autoclass:: pumas.desirability.step.Step
+    :members:
 
-High-level Class interface
-----------------------------
+.. autoclass:: pumas.desirability.step.RightStep
+    :members:
 
-
-
-Parameter Analysis (LeftStep)
------------------------------
-
-.. plot::
-
-    from pumas.plotting.desirability_parameter_analysis import plot_leftstep_analysis
-    plot_leftstep_analysis()
-
-Parameter Analysis (RightStep)
-------------------------------
-
-.. plot::
-
-    from pumas.plotting.desirability_parameter_analysis import plot_rightstep_analysis
-    plot_rightstep_analysis()
+.. autoclass:: pumas.desirability.step.LeftStep
+    :members:
 
 Parameter Analysis (Step)
 -----------------------------
@@ -29,3 +16,19 @@ Parameter Analysis (Step)
 
     from pumas.plotting.desirability_parameter_analysis import plot_step_analysis
     plot_step_analysis()
+
+Parameter Analysis (Right Step)
+--------------------------------
+
+.. plot::
+
+    from pumas.plotting.desirability_parameter_analysis import plot_rightstep_analysis
+    plot_rightstep_analysis()
+
+Parameter Analysis (Left Step)
+--------------------------------
+
+.. plot::
+
+    from pumas.plotting.desirability_parameter_analysis import plot_leftstep_analysis
+    plot_leftstep_analysis()

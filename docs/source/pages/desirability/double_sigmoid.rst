@@ -1,10 +1,12 @@
 Double Sigmoid
 ========================
 
-High-level Class interface
-----------------------------
+
 .. autoclass:: pumas.desirability.double_sigmoid.DoubleSigmoid
-    :noindex:
+    :members:
+
+.. autoclass:: pumas.desirability.double_sigmoid.double_sigmoid
+    :members:
 
 
 Parameter Analysis
