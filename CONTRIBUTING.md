@@ -67,6 +67,12 @@ If you would like to contribute to the package, we recommend the following devel
     # checking flake8
     python -m flake8 --ignore E501 src/pumas
     ```
+   Or use the pre-commit hooks provided in the repository:
+   ```sh
+    pre-commit install
+    pre-commit run --all-files
+    ```
+
 
 8. Once the tests and checks passes, but most importantly you are happy with the implemented feature, commit your changes.
 
