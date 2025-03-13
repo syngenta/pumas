@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from pumas.aggregation.aggregation_utils import run_data_validation_pipeline
-from pumas.aggregation.base_models import BaseAggregation
+from pumas.aggregation.base_models import Aggregation
 from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 
@@ -58,7 +58,7 @@ def compute_ufloat_weighted_harmonic_mean(
     return result  # type: ignore
 
 
-class WeightedHarmonicMeanAggregation(BaseAggregation):
+class WeightedHarmonicMeanAggregation(Aggregation):
     """
     Computes the weighted harmonic mean of a set of values with corresponding weights.
 

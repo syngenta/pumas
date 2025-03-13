@@ -187,7 +187,10 @@ from pumas.architecture.exceptions import (
     InvalidParameterTypeError,
     ParameterDefinitionError,
     ParameterNotFoundError,
+    ParameterSettingError,
+    ParameterSettingWarning,
     ParameterUpdateAttributeWarning,
+    ParameterValueNotSet,
 )
 from pumas.uncertainty.uncertainties_wrapper import UFloat
 
@@ -696,7 +699,10 @@ class ParameterManager:
     def set_parameter_attributes(self, name: str, attributes: Dict[str, Any]) -> None:
         """Updates properties of a parameter if it exists, excluding its value."""
         if name not in self.parameters_map:
-            raise ParameterNotFoundError(f"Parameter '{name}' does not exist.")
+            raise ParameterNotFoundError(
+                f"Parameter '{name}' does not exist in among the "
+                f"defined parameters: {list(self.parameters_map.keys())}."
+            )
 
         current_parameter = self.parameters_map[name]
         current_properties = vars(current_parameter)
@@ -724,17 +730,35 @@ class ParameterManager:
     def set_parameter_value(self, name: str, value: Any) -> None:
         """Sets the value of a parameter if it exists."""
         if name not in self.parameters_map:
-            raise ParameterNotFoundError(f"Parameter '{name}' does not exist.")
+            raise ParameterNotFoundError(
+                f"Parameter '{name}' does not exist in among the "
+                f"defined parameters: {list(self.parameters_map.keys())}."
+            )
+
+        try:
+            self.parameters_map[name].set_value(value=value)
+        except Exception as e:
+            # Add context to the error message while preserving
+            # the original error type and message
+            error_type = type(e)
+            original_message = str(e)
+            context_message = f"Error in parameter '{name}'"
+            new_message = f"{context_message}: {original_message}"
+            raise error_type(new_message) from None
+
+        """
+
         try:
             self.parameters_map[name].set_value(value=value)
         except (
-            InvalidParameterTypeError,
-            InvalidBoundaryError,
-            InvalidAcceptedValuesError,
+                InvalidParameterTypeError,
+                InvalidBoundaryError,
+                InvalidAcceptedValuesError,
         ) as e:
             raise InvalidParameterAttributeError(
                 f"Invalid value for parameter '{name}': {str(e)}"
             )
+        """
 
     def get_parameters_values(self) -> Dict[str, Any]:
         """
@@ -746,3 +770,53 @@ class ParameterManager:
             names and their current values.
         """
         return {name: param.value for name, param in self.parameters_map.items()}
+
+    def set_parameters_values(self, values_dict: Dict[str, Any]) -> None:
+        """
+        Sets the values of multiple parameters based on the provided dictionary.
+
+        Args:
+            values_dict (Dict[str, Any]): A dictionary where keys are parameter names
+                                          and values are the new values to be set.
+
+        Raises:
+            ParameterSettingError: If any parameter in the dictionary is not recognized.
+            ParameterSettingWarning: If not all parameters are being set.
+            InvalidParameterTypeError: If a value's type does not match the parameter's
+                                       expected type.
+            InvalidBoundaryError: If a value is outside the parameter's allowed range.
+            InvalidAcceptedValuesError: If a value is not in the list of accepted values.
+
+        """  # noqa: E501
+
+        for name, value in values_dict.items():
+            self.set_parameter_value(name, value)
+
+    def check_provided_parameters_values(self, values_dict: Dict[str, Any]) -> None:
+        expected_parameter_names = set(self.parameters_map.keys())
+        provided_parameter_names = set(values_dict.keys())
+        missing_parameters = expected_parameter_names - provided_parameter_names
+        extra_parameters = provided_parameter_names - expected_parameter_names
+        if len(extra_parameters) > 0:
+            raise ParameterSettingError(
+                f"Attempting to set unrecognized parameter(s): {list(extra_parameters)}"
+            )
+        if len(missing_parameters) > 0:
+            warnings.warn("Not all parameters are being set", ParameterSettingWarning)
+
+    def check_parameters_values_none(self):
+        """Ensures that all parameters have a non-None value.
+
+        Raises:
+            ParameterValueNotSet: If any  parameter is not set.
+        """
+        parameter_values = self.get_parameters_values()
+        unset_parameter_values = {
+            name: value for name, value in parameter_values.items() if value is None
+        }
+        if len(unset_parameter_values) > 0:
+            raise ParameterValueNotSet(
+                f"All parameters must be set (non-None) "
+                f"before computation. Please set the value of "
+                f"{list(unset_parameter_values.keys())}"
+            )

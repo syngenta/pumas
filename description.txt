@@ -1,1 +1,1 @@
-PUMAS
+PUMAS is a Python package implementing a multi-objective scoring systems based on desirability functions and aggregation.

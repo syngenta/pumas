@@ -3,7 +3,10 @@ from typing import Any, Dict
 import pytest
 
 from pumas.architecture.exceptions import (
+    InvalidAcceptedValuesError,
+    InvalidBoundaryError,
     InvalidParameterAttributeError,
+    InvalidParameterTypeError,
     ParameterDefinitionError,
     ParameterNotFoundError,
     ParameterUpdateAttributeWarning,
@@ -76,9 +79,7 @@ def test_set_parameter_value_invalid():
     param_defs = {"int_param": {"type": "int", "default": 5, "min": 0, "max": 10}}
     pm = ParameterManager(param_defs)
 
-    with pytest.raises(
-        InvalidParameterAttributeError, match="Invalid value for parameter 'int_param'"
-    ):
+    with pytest.raises(InvalidBoundaryError):
         pm.set_parameter_value("int_param", 15)
 
 
@@ -169,14 +170,10 @@ def test_parameter_type_validation():
     }
     pm = ParameterManager(param_defs)
 
-    with pytest.raises(
-        InvalidParameterAttributeError, match="Invalid value for parameter 'int_param'"
-    ):
+    with pytest.raises(InvalidParameterTypeError):
         pm.set_parameter_value("int_param", "not an int")
 
-    with pytest.raises(
-        InvalidParameterAttributeError, match="Invalid value for parameter 'str_param'"
-    ):
+    with pytest.raises(InvalidAcceptedValuesError):
         pm.set_parameter_value("str_param", "invalid")
 
 

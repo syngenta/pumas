@@ -5,6 +5,7 @@ import pytest
 from pumas.architecture.exceptions import (
     InvalidBoundaryError,
     InvalidParameterTypeError,
+    ParameterNotFoundError,
     ParameterSettingError,
     ParameterSettingWarning,
 )
@@ -37,7 +38,7 @@ class OneParameterOneInput(AbstractParametrizedStrategy):
         self._validate_and_set_parameters(params)
 
     def compute_numeric(self, x: float) -> float:
-        self._validate_input(x, (int, float))  # Allow both int and float
+        self._validate_compute_input(x, (int, float))  # Allow both int and float
         params = self.get_parameters_values()
 
         def func(q: float, a: float) -> float:
@@ -46,7 +47,7 @@ class OneParameterOneInput(AbstractParametrizedStrategy):
         return func(x, **params)
 
     def compute_ufloat(self, x: UFloat) -> UFloat:
-        self._validate_input(x, UFloat)
+        self._validate_compute_input(x, UFloat)
         params = self.get_parameters_values()
 
         def func(q: UFloat, a: float) -> UFloat:
@@ -68,7 +69,7 @@ class ManyParameterOneInput(AbstractParametrizedStrategy):
         self._validate_and_set_parameters(params)
 
     def compute_numeric(self, x: float) -> float:
-        self._validate_input(x, (int, float))  # Allow both int and float
+        self._validate_compute_input(x, (int, float))  # Allow both int and float
         params = self.get_parameters_values()
 
         def func(q: float, a: float, b: float, c: float) -> float:
@@ -77,7 +78,7 @@ class ManyParameterOneInput(AbstractParametrizedStrategy):
         return func(x, **params)
 
     def compute_ufloat(self, x: UFloat) -> UFloat:
-        self._validate_input(x, UFloat)
+        self._validate_compute_input(x, UFloat)
         params = self.get_parameters_values()
 
         def func(q: UFloat, a: float, b: float, c: float) -> UFloat:
@@ -97,7 +98,7 @@ class OneParameterTwoInputs(AbstractParametrizedStrategy):
         self._validate_and_set_parameters(params)
 
     def compute_numeric(self, x: float, y: float) -> float:
-        self._validate_input(x, (int, float))  # Allow both int and float
+        self._validate_compute_input(x, (int, float))  # Allow both int and float
         params = self.get_parameters_values()
 
         def func(q: float, w: float, weight: float) -> float:
@@ -106,7 +107,7 @@ class OneParameterTwoInputs(AbstractParametrizedStrategy):
         return func(q=x, w=y, **params)
 
     def compute_ufloat(self, x: UFloat, y: UFloat) -> UFloat:
-        self._validate_input(x, UFloat)
+        self._validate_compute_input(x, UFloat)
         params = self.get_parameters_values()
 
         def func(q: UFloat, w: UFloat, weight: float) -> UFloat:
@@ -183,7 +184,7 @@ def test_no_parameter_strategy_set_attributes(no_param_one_input):
     with pytest.warns(
         ParameterSettingWarning, match="This strategy does not accept parameters"
     ):
-        no_param_one_input.set_coefficient_parameters_attributes({"test": {"min": 0}})
+        no_param_one_input.set_parameters_attributes({"test": {"min": 0}})
 
 
 # one parameter one input
@@ -223,14 +224,14 @@ def test_one_param_one_input_set_invalid_parameter_type(one_param_one_input):
 
 
 def test_one_param_one_input_set_out_of_bounds_parameter(one_param_one_input):
-    invalid_params = {"a": 11.0}  # a should be between 0.0 and 10.0
+    invalid_params = {"a": 11.0}  # 'a' should be between 0.0 and 10.0
     with pytest.raises(InvalidBoundaryError):
         one_param_one_input.set_parameters_values(invalid_params)
 
 
 def test_one_param_one_input_set_unrecognized_parameter(one_param_one_input):
     invalid_params = {"unknown_param": 1.0}
-    with pytest.raises(ParameterSettingError):
+    with pytest.raises(ParameterNotFoundError):
         one_param_one_input.set_parameters_values(invalid_params)
 
 
@@ -280,7 +281,7 @@ def test_many_param_one_input_compute_numeric(many_param_one_input):
 
 def test_many_param_one_input_set_parameter_attributes(many_param_one_input):
     attributes = {"a": {"min": 1.0, "max": 5.0}}
-    many_param_one_input.set_coefficient_parameters_attributes(attributes)
+    many_param_one_input.set_parameters_attributes(attributes)
     assert many_param_one_input.parameter_manager.parameters_map["a"].min == 1.0
     assert many_param_one_input.parameter_manager.parameters_map["a"].max == 5.0
 
@@ -288,4 +289,4 @@ def test_many_param_one_input_set_parameter_attributes(many_param_one_input):
 def test_many_param_one_input_set_invalid_parameter_attributes(many_param_one_input):
     invalid_attributes = {"unknown_param": {"min": 0.0}}
     with pytest.raises(ParameterSettingError):
-        many_param_one_input.set_coefficient_parameters_attributes(invalid_attributes)
+        many_param_one_input.set_parameters_attributes(invalid_attributes)

@@ -1,4 +1,4 @@
-PUMAS
+PUMAS (Probabilities & Uncertainties in Multi-objective Assessment & Scoring)
 =======================================
 
 
@@ -23,14 +23,38 @@ PUMAS
    :target: https://github.com/psf/black
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://opensource.org/licenses/MIT
+
 ---------------------
 
-PUMAS
+
+This Python package implements a flexible multi-objective scoring system based on desirability functions and aggregation.
+
+Key Features
+------------
+
+* Define custom scoring profiles with:
+
+  - Desirability functions for each objective
+  - Aggregation algorithm selection
+  - Optional weighting and importance factors
+
+* Calculate individual desirability scores for each property
+* Aggregate scores using the specified method
+* Process data from various input formats (e.g., dictionaries, dataframes)
+
+Use Cases
+---------
+
+* Decision support systems
+* Multi-criteria optimization
+* Performance evaluation
+* Product or candidate ranking
+
 
 Installation
 ------------
 
-Create a dedicated python environment for this package with your favorite environment manager.
+Create a dedicated Python environment for this package with your favorite environment manager.
 
 .. code-block:: shell
 
@@ -38,23 +62,17 @@ Create a dedicated python environment for this package with your favorite enviro
    conda activate pumas
 
 
-* Option 1: Install the package from the git repository:
+* Option 1: Install the package from the github repository:
 
 .. code-block:: shell
 
-   pip install git+ssh://git@github.com/syngenta/pumas.git
+   pip install git+ssh://git@github.com/syngenta/pumas.git@main
 
-* Option 2: Install the package from the python package repository if its url is configured in the pip configuration file:
+* Option 2: Install the package from the Python Package Index (PyPI):
 
 .. code-block:: shell
 
    pip install pumas
-
-* Option 3: Install the package from the python package repository if its url is not configured in the pip configuration file:
-
-.. code-block:: shell
-
-    pip install pumas
 
 
 For Development

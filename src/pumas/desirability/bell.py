@@ -200,8 +200,8 @@ class Bell(Desirability):
             InvalidParameterTypeError: If the input is not a float.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_input(x, float)
-        self._check_coefficient_parameters_values()
+        self._validate_compute_input(x, float)
+        self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return compute_numeric_bell(x, **parameters)  # type: ignore
 
@@ -219,8 +219,8 @@ class Bell(Desirability):
             InvalidParameterTypeError: If the input is not a UFloat.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_input(x, UFloat)
-        self._check_coefficient_parameters_values()
+        self._validate_compute_input(x, UFloat)
+        # self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return compute_ufloat_bell(x, **parameters)  # type: ignore
 

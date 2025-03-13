@@ -91,8 +91,8 @@ class ValueMapping(Desirability):
             InvalidParameterTypeError: If the input is not a float.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_input(x, str)
-        self._check_coefficient_parameters_values()
+        self._validate_compute_input(x, str)
+        self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return value_mapping(x=x, **parameters)
 

@@ -3,10 +3,7 @@ import sys
 
 import pytest
 
-from pumas.architecture.parametrized_strategy import (
-    InvalidBoundaryError,
-    ParameterValueNotSet,
-)
+from pumas.architecture.exceptions import InvalidBoundaryError, ParameterValueNotSet
 from pumas.desirability import desirability_catalogue
 
 

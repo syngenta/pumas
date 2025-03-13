@@ -3,8 +3,6 @@ from abc import ABC
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
 from pumas.architecture.exceptions import (
-    InvalidBoundaryError,
-    InvalidParameterAttributeError,
     InvalidParameterTypeError,
     ParameterSettingError,
     ParameterSettingWarning,
@@ -17,6 +15,12 @@ class AbstractParametrizedStrategy(ABC):
     def __init__(self, params: Optional[Dict[str, Any]] = None):
         self.parameter_manager: ParameterManager = ParameterManager()
         self._params = params
+
+        self._check_parameters_values_none()
+
+    @property
+    def parameters_map(self) -> Dict[str, Any]:
+        return self.parameter_manager.parameters_map
 
     def _set_parameter_definitions(
         self, parameter_definitions: Dict[str, Dict[str, Any]]
@@ -33,7 +37,7 @@ class AbstractParametrizedStrategy(ABC):
         return self.parameter_manager.get_parameters_values()
 
     def set_parameters_values(self, values_dict: Dict[str, Any]) -> None:
-        if not self.parameter_manager.parameters_map:
+        if values_dict and not self.parameter_manager.parameters_map:
             warnings.warn(
                 "This strategy does not accept parameters. "
                 "The provided parameters will be ignored.",
@@ -41,26 +45,9 @@ class AbstractParametrizedStrategy(ABC):
             )
             return
 
-        if not all(
-            param in self.parameter_manager.parameters_map for param in values_dict
-        ):
-            raise ParameterSettingError("Attempting to set unrecognized parameter(s)")
+        self.parameter_manager.set_parameters_values(values_dict=values_dict)
 
-        if len(values_dict) != len(self.parameter_manager.parameters_map):
-            warnings.warn("Not all parameters are being set", ParameterSettingWarning)
-
-        for name, value in values_dict.items():
-            try:
-                self.parameter_manager.set_parameter_value(name, value)
-            except InvalidParameterAttributeError as e:
-                if "Expected type" in str(e):
-                    raise InvalidParameterTypeError(str(e))
-                elif "outside the allowed range" in str(e):
-                    raise InvalidBoundaryError(str(e))
-                else:
-                    raise
-
-    def set_coefficient_parameters_attributes(
+    def set_parameters_attributes(
         self, attributes_map: Dict[str, Dict[str, Any]]
     ) -> None:
         if not self.parameter_manager.parameters_map:
@@ -98,7 +85,7 @@ class AbstractParametrizedStrategy(ABC):
         return values[name]
 
     @staticmethod
-    def _validate_input(
+    def _validate_compute_input(
         item: Any, expected_type: Union[Type[Any], Tuple[Type[Any], ...]]
     ) -> None:
         if not isinstance(item, expected_type):
@@ -107,14 +94,10 @@ class AbstractParametrizedStrategy(ABC):
                 f"got {type(item).__name__} instead."
             )
 
-    def _check_coefficient_parameters_values(self):
-        """Ensures that all coefficient parameters are set before computation.
+    def _check_parameters_values_none(self):
+        """Ensures that all parameters are set before computation.
 
         Raises:
-            ParameterValueNotSet: If any coefficient parameter is not set.
+            ParameterValueNotSet: If any  parameter is not set.
         """
-        parameter_coefficient_values = self.get_parameters_values()
-        if any(value is None for value in parameter_coefficient_values.values()):
-            raise ParameterValueNotSet(
-                "All coefficient parameters must be set (non-None) before computation."
-            )
+        self.parameter_manager.check_parameters_values_none()

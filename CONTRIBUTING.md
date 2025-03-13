@@ -73,7 +73,6 @@ If you would like to contribute to the package, we recommend the following devel
     pre-commit run --all-files
     ```
 
-
 8. Once the tests and checks passes, but most importantly you are happy with the implemented feature, commit your changes.
 
     ```sh

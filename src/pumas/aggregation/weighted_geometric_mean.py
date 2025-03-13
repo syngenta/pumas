@@ -3,7 +3,7 @@ from typing import List, Optional
 import numpy as np
 
 from pumas.aggregation.aggregation_utils import run_data_validation_pipeline
-from pumas.aggregation.base_models import BaseAggregation
+from pumas.aggregation.base_models import Aggregation
 from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 
@@ -27,7 +27,7 @@ def compute_ufloat_weighted_geometric_mean(
     return result  # type: ignore
 
 
-class WeightedGeometricMeanAggregation(BaseAggregation):
+class WeightedGeometricMeanAggregation(Aggregation):
     """
     Computes the weighted geometric mean of a set of values with corresponding weights.
 

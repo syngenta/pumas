@@ -1,4 +1,4 @@
-from pumas.aggregation.base_models import BaseAggregation
+from pumas.aggregation.base_models import Aggregation
 from pumas.aggregation.weighted_arithmetic_mean import WeightedArithmeticMeanAggregation
 from pumas.aggregation.weighted_deviation_index import WeightedDeviationIndexAggregation
 from pumas.aggregation.weighted_geometric_mean import WeightedGeometricMeanAggregation
@@ -7,7 +7,7 @@ from pumas.aggregation.weighted_product import WeightedProductAggregation
 from pumas.aggregation.weighted_summation import WeightedSummationAggregation
 from pumas.architecture.catalogue import Catalogue
 
-aggregation_catalogue = Catalogue(item_type=BaseAggregation)
+aggregation_catalogue = Catalogue(item_type=Aggregation)
 
 
 # Register all aggregation methods here

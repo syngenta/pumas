@@ -5,7 +5,7 @@ from pumas.architecture.parametrized_strategy import AbstractParametrizedStrateg
 from pumas.uncertainty.uncertainties_wrapper import UFloat
 
 
-class BaseAggregation(AbstractParametrizedStrategy):
+class Aggregation(AbstractParametrizedStrategy):
     @abstractmethod
     def compute_numeric(
         self, values: List[float], weights: List[float]
