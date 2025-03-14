@@ -5,7 +5,7 @@ from pumas.scoring_profile.scoring_profile import (
     AggregationFunction,
     DesirabilityFunction,
     Objective,
-    Profile,
+    ScoringProfile,
 )
 
 
@@ -26,8 +26,6 @@ def valid_objective():
             parameters={"low": 0.0, "high": 1.0, "k": 0.1, "base": 10.0, "shift": 0.0},
         ),
         weight=0.5,
-        value_type="float",
-        kind="numerical",
     )
 
 
@@ -38,7 +36,9 @@ def valid_aggregation():
 
 @pytest.fixture
 def valid_profile(valid_objective, valid_aggregation):
-    return Profile(objectives=[valid_objective], aggregation_function=valid_aggregation)
+    return ScoringProfile(
+        objectives=[valid_objective], aggregation_function=valid_aggregation
+    )
 
 
 # Desirability Function Tests
@@ -161,7 +161,7 @@ def test_valid_profile(valid_profile):
 def test_profile_unique_objective_names(valid_objective, valid_aggregation):
     """Test duplicated objective names raise error"""
     with pytest.raises(ValidationError):
-        Profile(
+        ScoringProfile(
             objectives=[valid_objective, valid_objective],
             aggregation_function=valid_aggregation,
         )
@@ -175,8 +175,6 @@ def test_profile_all_weights_is_ok(valid_aggregation):
             parameters={"low": 0.0, "high": 1.0, "k": 0.1, "base": 10.0, "shift": 0.0},
         ),
         weight=0.5,
-        value_type="float",
-        kind="numerical",
     )
     obj2 = Objective(
         name="obj2",
@@ -185,10 +183,8 @@ def test_profile_all_weights_is_ok(valid_aggregation):
             parameters={"low": 0.0, "high": 1.0, "k": 0.1, "base": 10.0, "shift": 0.0},
         ),
         weight=0.5,
-        value_type="float",
-        kind="numerical",
     )
-    Profile(objectives=[obj1, obj2], aggregation_function=valid_aggregation)
+    ScoringProfile(objectives=[obj1, obj2], aggregation_function=valid_aggregation)
 
 
 def test_profile_non_weights_is_ok(valid_aggregation):
@@ -198,8 +194,6 @@ def test_profile_non_weights_is_ok(valid_aggregation):
             name="sigmoid",
             parameters={"low": 0.0, "high": 1.0, "k": 0.1, "base": 10.0, "shift": 0.0},
         ),
-        value_type="float",
-        kind="numerical",
     )
     obj2 = Objective(
         name="obj2",
@@ -207,10 +201,8 @@ def test_profile_non_weights_is_ok(valid_aggregation):
             name="sigmoid",
             parameters={"low": 0.0, "high": 1.0, "k": 0.1, "base": 10.0, "shift": 0.0},
         ),
-        value_type="float",
-        kind="numerical",
     )
-    Profile(objectives=[obj1, obj2], aggregation_function=valid_aggregation)
+    ScoringProfile(objectives=[obj1, obj2], aggregation_function=valid_aggregation)
 
 
 def test_profile_some_weights_raises(valid_objective, valid_aggregation):
@@ -220,8 +212,6 @@ def test_profile_some_weights_raises(valid_objective, valid_aggregation):
             name="sigmoid",
             parameters={"low": 0.0, "high": 1.0, "k": 0.1, "base": 10.0, "shift": 0.0},
         ),
-        value_type="float",
-        kind="numerical",
     )
     obj2 = Objective(
         name="obj2",
@@ -230,11 +220,11 @@ def test_profile_some_weights_raises(valid_objective, valid_aggregation):
             parameters={"low": 0.0, "high": 1.0, "k": 0.1, "base": 10.0, "shift": 0.0},
         ),
         weight=1.0,
-        value_type="float",
-        kind="numerical",
     )
     with pytest.raises(ValidationError):
-        _ = Profile(objectives=[obj1, obj2], aggregation_function=valid_aggregation)
+        _ = ScoringProfile(
+            objectives=[obj1, obj2], aggregation_function=valid_aggregation
+        )
 
 
 def test_profile_serialization(valid_profile):
@@ -242,15 +232,15 @@ def test_profile_serialization(valid_profile):
     serialized = valid_profile.model_dump_json()
     assert serialized
     assert isinstance(serialized, str)
-    deserialized = Profile.model_validate_json(serialized)
+    deserialized = ScoringProfile.model_validate_json(serialized)
     assert deserialized
-    assert isinstance(deserialized, Profile)
+    assert isinstance(deserialized, ScoringProfile)
 
 
 def test_profile_write_read(valid_profile, tmpdir):
     """Test file_roundtrip"""
     file_path = tmpdir / "test_profile.json"
     valid_profile.write_to_file(file_path=file_path)
-    profile = Profile.read_from_file(file_path=file_path)
+    profile = ScoringProfile.read_from_file(file_path=file_path)
     assert profile == valid_profile
-    assert isinstance(profile, Profile)
+    assert isinstance(profile, ScoringProfile)

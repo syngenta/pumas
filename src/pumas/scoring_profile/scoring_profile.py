@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
@@ -46,8 +46,8 @@ class Objective(BaseModel):
     name: str
     desirability_function: DesirabilityFunction
     weight: Optional[float] = None
-    value_type: Optional[Literal["float", "str", "bool"]]
-    kind: Optional[Literal["numerical", "categorical"]]
+    # value_type: Optional[Literal["float", "str", "bool"]] = None
+    # kind: Optional[Literal["numerical", "categorical"]] = None
 
 
 class AggregationFunction(BaseModel):
@@ -67,12 +67,12 @@ class AggregationFunction(BaseModel):
     model_config = {"extra": "forbid"}
 
 
-class Profile(BaseModel):
+class ScoringProfile(BaseModel):
     objectives: List[Objective]
     aggregation_function: AggregationFunction
 
     @model_validator(mode="after")
-    def validate_weights(self) -> "Profile":
+    def validate_weights(self) -> "ScoringProfile":
         weights = [obj.weight for obj in self.objectives if obj.weight is not None]
 
         if len(weights) != 0 and len(weights) != len(self.objectives):
@@ -100,7 +100,7 @@ class Profile(BaseModel):
             file.write(self.model_dump_json(indent=2))
 
     @classmethod
-    def read_from_file(cls, file_path: Union[Path, str]) -> "Profile":
+    def read_from_file(cls, file_path: Union[Path, str]) -> "ScoringProfile":
         """
         Reads a scoring profile from a JSON file.
         """
@@ -108,5 +108,5 @@ class Profile(BaseModel):
             file_path = Path(file_path)
 
         with file_path.open("r") as file:
-            profile = Profile.model_validate_json(file.read())
+            profile = ScoringProfile.model_validate_json(file.read())
         return profile

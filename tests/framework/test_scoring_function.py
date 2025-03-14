@@ -2,7 +2,7 @@
 import pytest
 
 from pumas.scoring_framework.scoring_function import ScoringFunction
-from pumas.scoring_profile.models import Profile
+from pumas.scoring_profile.scoring_profile import ScoringProfile
 
 
 # Fixture for a valid DataFrame
@@ -83,7 +83,7 @@ def scoring_profile():
             "parameters": {},
         },
     }
-    return Profile(**scoring_profile_dict)
+    return ScoringProfile(**scoring_profile_dict)
 
 
 def test_initialize_scoring_function(property_dataframe, scoring_profile):
@@ -96,4 +96,4 @@ def test_initialize_scoring_function(property_dataframe, scoring_profile):
     assert scoring_function is not None
 
     result = scoring_function.compute(data=property_dataframe[0])
-    print(result)
+    assert result is not None

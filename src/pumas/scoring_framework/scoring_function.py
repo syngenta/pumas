@@ -5,11 +5,11 @@ from pumas.aggregation import aggregation_catalogue
 from pumas.aggregation.base_models import Aggregation
 from pumas.desirability import desirability_catalogue
 from pumas.desirability.base_models import Desirability
-from pumas.scoring_profile.scoring_profile import Profile
+from pumas.scoring_profile.scoring_profile import ScoringProfile
 
 
 class ScoringFunction:
-    def __init__(self, profile: Profile):
+    def __init__(self, profile: ScoringProfile):
         self.profile = profile
         self.desirability_functions = self._initialize_desirability_functions()
         self.aggregation_function = self._initialize_aggregation_function()
