@@ -3,7 +3,7 @@ from abc import ABC
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
 from pumas.architecture.exceptions import (
-    InvalidParameterTypeError,
+    InvalidInputTypeError,
     ParameterSettingError,
     ParameterSettingWarning,
     ParameterValueNotSet,
@@ -89,7 +89,7 @@ class AbstractParametrizedStrategy(ABC):
         item: Any, expected_type: Union[Type[Any], Tuple[Type[Any], ...]]
     ) -> None:
         if not isinstance(item, expected_type):
-            raise InvalidParameterTypeError(
+            raise InvalidInputTypeError(
                 f"Expected {expected_type.__name__ if isinstance(expected_type, type) else expected_type}, "  # noqa: E501
                 f"got {type(item).__name__} instead."
             )

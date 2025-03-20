@@ -314,12 +314,12 @@ class MultiStep(Desirability):
         )
         self._validate_and_set_parameters(params)
 
-    def compute_numeric(self, x: float) -> float:
+    def compute_numeric(self, x: Union[int, float]) -> float:
         """
         Compute the multistep desirability for a numeric input.
 
         Args:
-            x (float): The input value.
+            x (Union[int, float]): The numeric input value.
 
         Returns:
             float: The computed desirability value.
@@ -328,7 +328,7 @@ class MultiStep(Desirability):
             InvalidParameterTypeError: If the input is not a float.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_compute_input(x, float)
+        self._validate_compute_input(item=x, expected_type=(int, float))
         self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return compute_numeric_multistep(x=x, **parameters)  # type: ignore

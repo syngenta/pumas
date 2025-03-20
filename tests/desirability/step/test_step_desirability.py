@@ -1,6 +1,10 @@
 import pytest
 
-from pumas.architecture.exceptions import InvalidBoundaryError, ParameterValueNotSet
+from pumas.architecture.exceptions import (
+    InvalidBoundaryError,
+    InvalidInputTypeError,
+    ParameterValueNotSet,
+)
 from pumas.desirability import desirability_catalogue
 
 
@@ -43,6 +47,27 @@ def test_central_step_parameters_after_initialization(name):
     }
 
 
+@pytest.mark.parametrize("name", ["step"])
+@pytest.mark.parametrize("x", [0.5, -0.5, 1])
+def test_central_step_compute_numeric_input_type_success(name, x):
+    desirability_class = desirability_catalogue.get(name)
+    params = {"low": 1.0, "high": 2.0, "invert": False, "shift": 0.1}
+    desirability = desirability_class(params=params)
+    desirability.compute_numeric(x=x)
+
+
+@pytest.mark.parametrize("name", ["step"])
+@pytest.mark.parametrize("x, error_type", [("0.5", InvalidInputTypeError)])
+def test_central_step_compute_numeric_input_type_fail(name, x, error_type):
+    desirability_class = desirability_catalogue.get(name)
+    params = {"low": 1.0, "high": 2.0, "invert": False, "shift": 0.1}
+    desirability = desirability_class(params=params)
+    with pytest.raises(
+        error_type,
+    ):
+        desirability.compute_numeric(x=x)
+
+
 @pytest.mark.parametrize("name", ["leftstep", "rightstep"])
 def test_r_l_step_parameters_after_initialization(name):
     desirability_class = desirability_catalogue.get(name)
@@ -55,6 +80,27 @@ def test_r_l_step_parameters_after_initialization(name):
         "high": 2.0,
         "shift": 0.1,
     }
+
+
+@pytest.mark.parametrize("name", ["leftstep", "rightstep"])
+@pytest.mark.parametrize("x", [0.5, -0.5, 1])
+def test_r_l_step_compute_numeric_input_type_success(name, x):
+    desirability_class = desirability_catalogue.get(name)
+    params = {"low": 1.0, "high": 2.0, "shift": 0.1}
+    desirability = desirability_class(params=params)
+    desirability.compute_numeric(x=x)
+
+
+@pytest.mark.parametrize("name", ["leftstep", "rightstep"])
+@pytest.mark.parametrize("x, error_type", [("0.5", InvalidInputTypeError)])
+def test_r_l_step_compute_numeric_input_type_fail(name, x, error_type):
+    desirability_class = desirability_catalogue.get(name)
+    params = {"low": 1.0, "high": 2.0, "shift": 0.1}
+    desirability = desirability_class(params=params)
+    with pytest.raises(
+        error_type,
+    ):
+        desirability.compute_numeric(x=x)
 
 
 @pytest.mark.parametrize("name", ["step", "leftstep", "rightstep"])

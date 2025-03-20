@@ -4,6 +4,7 @@ import pytest
 
 from pumas.architecture.exceptions import (
     InvalidBoundaryError,
+    InvalidInputTypeError,
     InvalidParameterTypeError,
     ParameterNotFoundError,
     ParameterSettingError,
@@ -207,7 +208,7 @@ def test_one_param_one_input_without_setting_parameters(
 
 def test_one_param_one_input_with_invalid_input_type(one_param_one_input):
     one_param_one_input.set_parameters_values({"a": 1.0})
-    with pytest.raises(InvalidParameterTypeError):
+    with pytest.raises(InvalidInputTypeError):
         one_param_one_input.compute_numeric("not_a_number")
 
 

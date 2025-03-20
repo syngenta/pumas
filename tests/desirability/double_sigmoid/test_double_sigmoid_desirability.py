@@ -1,6 +1,10 @@
 import pytest
 
-from pumas.architecture.exceptions import InvalidBoundaryError, ParameterValueNotSet
+from pumas.architecture.exceptions import (
+    InvalidBoundaryError,
+    InvalidInputTypeError,
+    ParameterValueNotSet,
+)
 from pumas.desirability import desirability_catalogue
 
 
@@ -122,3 +126,40 @@ def test_double_sigmoid_raises_error(
         InvalidBoundaryError,
     ):
         _ = desirability_class(params=params)
+
+
+@pytest.mark.parametrize("x", [0.5, -0.5, 1])
+def test_double_sigmoid_compute_numeric_input_type_success(desirability_class, x):
+    params = {
+        "low": 3.0,
+        "high": 7.0,
+        "coef_div": 1.0,
+        "coef_si": 2.0,
+        "coef_se": 2.0,
+        "shift": 0.1,
+        "invert": True,
+        "base": 10.0,
+    }
+    desirability = desirability_class(params=params)
+    desirability.compute_numeric(x=x)
+
+
+@pytest.mark.parametrize("x, error_type", [("0.5", InvalidInputTypeError)])
+def test_double_sigmoid_compute_numeric_input_type_fail(
+    desirability_class, x, error_type
+):
+    params = {
+        "low": 3.0,
+        "high": 7.0,
+        "coef_div": 1.0,
+        "coef_si": 2.0,
+        "coef_se": 2.0,
+        "shift": 0.1,
+        "invert": True,
+        "base": 10.0,
+    }
+    desirability = desirability_class(params=params)
+    with pytest.raises(
+        error_type,
+    ):
+        desirability.compute_numeric(x=x)

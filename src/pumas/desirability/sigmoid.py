@@ -189,7 +189,7 @@ class Sigmoid(Desirability):
     >>> print(f"{result:.2f}")
     0.50
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> from uncertainties import ufloat
     >>> result = desirability.compute_ufloat(x=ufloat(0.5, 0.1))
     >>> print(result)
     0.50+/-0.06
@@ -224,21 +224,21 @@ class Sigmoid(Desirability):
         )
         self._validate_and_set_parameters(params)
 
-    def compute_numeric(self, x: float) -> float:
+    def compute_numeric(self, x: Union[int, float]) -> float:
         """
-        Compute the sigmoid desirability for an uncertain float input.
+        Compute the sigmoid desirability for a numeric input.
 
         Args:
-            x (UFloat): The uncertain float input value.
+            x (Union[int, float]): The numeric input value.
 
         Returns:
-            UFloat: The computed desirability value with uncertainty.
+            float: The computed desirability value.
 
         Raises:
-            InvalidParameterTypeError: If the input is not a UFloat.
+            InvalidInputTypeError: If the input is not an int or float.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_compute_input(x, float)
+        self._validate_compute_input(item=x, expected_type=(int, float))
         self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return compute_numeric_sigmoid(x=x, **parameters)  # type: ignore
@@ -254,7 +254,7 @@ class Sigmoid(Desirability):
             UFloat: The computed desirability value with uncertainty.
 
         Raises:
-            InvalidParameterTypeError: If the input is not a UFloat.
+            InvalidInputTypeError: If the input is not a UFloat.
             ParameterValueNotSet: If any required parameter is not set.
         """
         self._validate_compute_input(x, UFloat)

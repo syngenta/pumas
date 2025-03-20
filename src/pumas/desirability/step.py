@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from pumas.desirability.base_models import Desirability
 from pumas.uncertainty.uncertainties_wrapper import UFloat, ufloat
@@ -220,7 +220,7 @@ class RightStep(Desirability):
     >>> print(f"{result:.2f}")
     1.00
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> from uncertainties import ufloat
     >>> result = desirability.compute_ufloat(x=ufloat(1.0, 0.1))
     >>> print(result)
     1.00+/-0.10
@@ -254,12 +254,12 @@ class RightStep(Desirability):
         )
         self._validate_and_set_parameters(params)
 
-    def compute_numeric(self, x: float) -> float:
+    def compute_numeric(self, x: Union[int, float]) -> float:
         """
         Compute the right step desirability for a numeric input.
 
         Args:
-            x (float): The input value.
+            x (Union[int, float]): The numeric input value.
 
         Returns:
             float: The computed desirability value.
@@ -268,7 +268,7 @@ class RightStep(Desirability):
             InvalidParameterTypeError: If the input is not a float.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_compute_input(x, float)
+        self._validate_compute_input(item=x, expected_type=(int, float))
         self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return compute_numeric_right_step(x=x, **parameters)
@@ -344,7 +344,7 @@ class LeftStep(Desirability):
     >>> print(f"{result:.2f}")
     0.00
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> from uncertainties import ufloat
     >>> result = desirability.compute_ufloat(x=ufloat(1.0, 0.1))
     >>> print(result)
     1.00+/-0.10
@@ -377,12 +377,12 @@ class LeftStep(Desirability):
         )
         self._validate_and_set_parameters(params)
 
-    def compute_numeric(self, x: float) -> float:
+    def compute_numeric(self, x: Union[int, float]) -> float:
         """
         Compute the left step desirability for a numeric input.
 
         Args:
-            x (float): The input value.
+            x (Union[int, float]): The numeric input value.
 
         Returns:
             float: The computed desirability value.
@@ -391,7 +391,7 @@ class LeftStep(Desirability):
             InvalidParameterTypeError: If the input is not a float.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_compute_input(x, float)
+        self._validate_compute_input(item=x, expected_type=(int, float))
         self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return compute_numeric_left_step(x=x, **parameters)
@@ -478,7 +478,7 @@ class Step(Desirability):
     >>> print(f"{result:.2f}")
     0.00
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> from uncertainties import ufloat
     >>> result = desirability.compute_ufloat(x=ufloat(0.5, 0.1))
     >>> print(result)
     1.00+/-0.10
@@ -514,12 +514,12 @@ class Step(Desirability):
         )
         self._validate_and_set_parameters(params)
 
-    def compute_numeric(self, x: float) -> float:
+    def compute_numeric(self, x: Union[int, float]) -> float:
         """
         Compute the centered step desirability for a numeric input.
 
         Args:
-            x (float): The input value.
+            x (Union[int, float]): The numeric input value.
 
         Returns:
             float: The computed desirability value.
@@ -528,7 +528,7 @@ class Step(Desirability):
             InvalidParameterTypeError: If the input is not a float.
             ParameterValueNotSet: If any required parameter is not set.
         """
-        self._validate_compute_input(x, float)
+        self._validate_compute_input(item=x, expected_type=(int, float))
         self._check_parameters_values_none()
         parameters = self.get_parameters_values()
         return compute_numeric_step(x=x, **parameters)

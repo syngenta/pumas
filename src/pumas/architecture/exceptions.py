@@ -61,3 +61,7 @@ class ParameterNotFoundError(Exception):
 
 class InvalidParameterAttributeError(Exception):
     pass
+
+
+class InvalidInputTypeError(Exception):
+    pass

@@ -3,7 +3,11 @@ import sys
 
 import pytest
 
-from pumas.architecture.exceptions import InvalidBoundaryError, ParameterValueNotSet
+from pumas.architecture.exceptions import (
+    InvalidBoundaryError,
+    InvalidInputTypeError,
+    ParameterValueNotSet,
+)
 from pumas.desirability import desirability_catalogue
 
 
@@ -151,3 +155,20 @@ def test_utility_function_raises_error(
     ):
         desirability = desirability_class(params=params)
         _ = desirability.compute_numeric(x=x)
+
+
+@pytest.mark.parametrize("x", [0.5, -0.5, 1])
+def test_bell_compute_numeric_input_type_success(desirability_class, x):
+    params = {"width": 1.0, "slope": 2.0, "center": 0.5, "invert": False, "shift": 0.1}
+    desirability = desirability_class(params=params)
+    desirability.compute_numeric(x=x)
+
+
+@pytest.mark.parametrize("x, error_type", [("0.5", InvalidInputTypeError)])
+def test_bell_compute_numeric_input_type_fail(desirability_class, x, error_type):
+    params = {"width": 1.0, "slope": 2.0, "center": 0.5, "invert": False, "shift": 0.1}
+    desirability = desirability_class(params=params)
+    with pytest.raises(
+        error_type,
+    ):
+        desirability.compute_numeric(x=x)
