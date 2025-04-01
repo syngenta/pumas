@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pumas"
-version = "0.0.0"
+version = "1.0.0"
 requires-python = ">=3.9"
 # https://pypi.org/classifiers/
 classifiers = [
@@ -22,7 +22,6 @@ classifiers = [
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Scientific/Engineering",
 ]
 dynamic = [
@@ -46,9 +45,11 @@ readme = {file = "README.rst", content-type = "text/x-rst"}
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = {file = "requirements-dev.txt"}
+uncertainty = {file = ["requirements-uncertainty.txt"]}
+graphics = {file = ["requirements-graphics.txt"]}
 
 [tool.bumpver]
-current_version = "0.0.0"
+current_version = "1.0.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message  = "Bump version {old_version} -> {new_version}"
 commit          = true

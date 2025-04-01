@@ -1,20 +1,33 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.2.0
+- repo: meta
   hooks:
-  -   id: trailing-whitespace
-  -   id: end-of-file-fixer
-  -   id: check-yaml
-  -   id: check-added-large-files
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+      - id: check-yaml
+      - id: check-case-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-toml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        # exclude: '^docs/source/reference/generated/.*\.rst'
+      - id: fix-byte-order-marker
+        # exclude: '^docs/source/reference/generated/.*\.rst'
+      - id: no-commit-to-branch
+        args: [ --branch, main ]
+      - id: trailing-whitespace
+        # exclude: '^docs/source/reference/generated/.*\.rst'
 - repo: https://github.com/pycqa/isort
   rev: 5.13.2
   hooks:
     - id: isort
       name: isort (python)
-- repo: https://github.com/ambv/black
-  rev: 23.9.1
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 24.8.0
   hooks:
     - id: black
       files: '.*\.pyi?$'
@@ -22,3 +35,10 @@ repos:
     rev: 7.1.0
     hooks:
     -   id: flake8
+
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: 'v1.14.1'
+  hooks:
+    - id: mypy
+      additional_dependencies:
+        - "pydantic>=2.0.0"
