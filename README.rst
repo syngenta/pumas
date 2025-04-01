@@ -1,5 +1,5 @@
 PUMAS (Probabilities & Uncertainties in Multi-objective Assessment & Scoring)
-=======================================
+===============================================================================
 
 
 .. image:: https://img.shields.io/pypi/v/pumas

@@ -1,4 +1,4 @@
 Uncertainties
 ----------------------------
-.. automodule:: pumas.uncertainty.uncertainties_wrapper
+.. automodule:: pumas.uncertainty_management.uncertainties.uncertainties_wrapper
     :noindex:
