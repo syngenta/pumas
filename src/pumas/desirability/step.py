@@ -1,7 +1,10 @@
 from typing import Any, Dict, Optional, Union
 
 from pumas.desirability.base_models import Desirability
-from pumas.uncertainty.uncertainties_wrapper import UFloat, ufloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    ufloat,
+)
 
 
 def compute_numeric_right_step(

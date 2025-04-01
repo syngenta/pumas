@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 
 from pumas.aggregation.aggregation_utils import run_data_validation_pipeline
 from pumas.aggregation.base_models import Aggregation
-from pumas.uncertainty.uncertainties_wrapper import UFloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 
 def compute_numeric_weighted_geometric_mean(
@@ -61,7 +61,7 @@ class WeightedGeometricMeanAggregation(Aggregation):
     >>> print(f"{result:.2f}")
     2.13
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> from uncertainties import ufloat
     >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
     >>> weights = [0.2, 0.3, 0.5]
     >>> result = aggregator.compute_ufloat(values=values, weights=weights)
@@ -70,7 +70,9 @@ class WeightedGeometricMeanAggregation(Aggregation):
     """
 
     def compute_numeric(
-        self, values: List[float], weights: Optional[List[float]] = None
+        self,
+        values: List[Union[float, None]],
+        weights: Optional[List[Union[float, None]]] = None,
     ) -> float:
         """
         Compute the weighted geometric mean for numeric input values.
@@ -92,7 +94,9 @@ class WeightedGeometricMeanAggregation(Aggregation):
         )
 
     def compute_ufloat(
-        self, values: List[UFloat], weights: Optional[List[float]] = None
+        self,
+        values: List[Union[UFloat, None]],
+        weights: Optional[List[Union[float, None]]] = None,
     ) -> UFloat:
         """
         Compute the weighted geometric mean for uncertain float input values.

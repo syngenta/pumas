@@ -74,13 +74,39 @@ Create a dedicated Python environment for this package with your favorite enviro
 
    pip install pumas
 
+Installing optional dependencies
+---------------------------------
+Extensions to Pumas, have conditional dependencies on a variety of third-party Python packages.
+All dependencies are installed
 
-For Development
----------------
+A full list of conditional dependencies can be found in Pumas's pyproject.toml (stored related requirements text files).
+
+Uncertainty Management and Probabilistic Scoring
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The core installation of PUMAS support a basic scoring framework based on numerical values.
+To enable probabilistic scoring frameworks, to use and propagate value uncertainty, please install optional libraries with:
+
+.. code-block:: shell
+
+   pip install pumas[uncertainty]
+
+Graphical bindings and plotting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The core installation of PUMAS does not include any plotting capability, and, hence, the graphical bindings are unavailable.
+To enable both the plotting module and the graphical binding, please install the optional libraries with:
+
+.. code-block:: shell
+
+   pip install pumas[graphics]
+
+
+Development Installation
+---------------------------
 
 When working on the development of this package, the developer wants to work
-directly on the source code while still using the packaged installation. For
-that, run:
+directly on the source code while still using the packaged installation.
+
+Please install the package in development mode, including all dependencies.
 
 .. code-block:: shell
 

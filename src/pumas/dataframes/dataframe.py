@@ -190,7 +190,7 @@ from pumas.dataframes.exceptions import (
     DuplicateValuesError,
     UnsupportedIndexCreationMethodError,
 )
-from pumas.utils.parallel_utils import parallelize, parallelize_with_indices
+from pumas.parallelization.parallel_utils import parallelize, parallelize_with_indices
 
 
 class UnspecifiedDataType:

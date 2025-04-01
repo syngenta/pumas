@@ -3,7 +3,10 @@ from scipy.stats import hmean
 
 from pumas.aggregation import aggregation_catalogue
 from pumas.aggregation.weighted_harmonic_mean import WeightedHarmonicMeanAggregation
-from pumas.uncertainty.uncertainties_wrapper import UFloat, ufloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    ufloat,
+)
 
 
 @pytest.fixture

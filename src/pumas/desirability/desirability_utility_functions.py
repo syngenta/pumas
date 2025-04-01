@@ -1,6 +1,8 @@
 import math as math_native
 
-from pumas.uncertainty.uncertainties_wrapper import umath as math_uncertainties
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    umath as math_uncertainties,
+)
 
 
 def math_switcher(math_module):

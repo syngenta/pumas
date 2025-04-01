@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from pydantic import BaseModel, field_validator
 
 from pumas.desirability.base_models import Desirability
-from pumas.uncertainty.uncertainties_wrapper import UFloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 
 class Point(BaseModel):

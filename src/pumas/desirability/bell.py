@@ -5,7 +5,10 @@ from types import ModuleType
 from typing import Any, Dict, Optional, Union
 
 from pumas.desirability.base_models import Desirability
-from pumas.uncertainty.uncertainties_wrapper import UFloat, umath
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    umath,
+)
 
 
 def bell(

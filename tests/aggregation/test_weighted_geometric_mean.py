@@ -3,7 +3,10 @@ from scipy.stats import gmean
 
 from pumas.aggregation import aggregation_catalogue
 from pumas.aggregation.weighted_geometric_mean import WeightedGeometricMeanAggregation
-from pumas.uncertainty.uncertainties_wrapper import UFloat, ufloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    ufloat,
+)
 
 
 @pytest.fixture

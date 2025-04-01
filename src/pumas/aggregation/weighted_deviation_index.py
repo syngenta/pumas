@@ -1,14 +1,16 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 
 from pumas.aggregation.aggregation_utils import run_data_validation_pipeline
 from pumas.aggregation.base_models import Aggregation
-from pumas.uncertainty.uncertainties_wrapper import UFloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 
 def compute_numeric_weighted_deviation_index(
-    values: List[float], weights: Optional[List[float]] = None, ideal_value: float = 1.0
+    values: List[Union[float, None]],
+    weights: Optional[List[Union[float, None]]] = None,
+    ideal_value: float = 1.0,
 ) -> float:
     weights = np.array(weights)
     values = np.array(values)
@@ -72,22 +74,28 @@ class WeightedDeviationIndexAggregation(Aggregation):
 
      >>> aggregator = aggregator_class()
 
-     >>> values = [1.0, 2.0, 3.0]
+     >>> values = [0.1, 0.2]
+     >>> weights = [1.0, 1.0]
+     >>> result = aggregator.compute_numeric(values=values, weights=weights)
+     >>> print(f"{result:.2f}")
+     0.15
+
+     >>> values = [0.1, 0.2, 0.3]
      >>> weights = [0.2, 0.3, 0.5]
      >>> result = aggregator.compute_numeric(values=values, weights=weights)
      >>> print(f"{result:.2f}")
-     -0.69
+     0.25
 
      >>> result = aggregator(values=values, weights=weights) # Same as compute_numeric
      >>> print(f"{result:.2f}")
-     -0.69
+     0.25
 
-     >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
-     >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
+     >>> from uncertainties import ufloat
+     >>> values = [ufloat(0.1, 0.1), ufloat(0.2, 0.2), ufloat(0.3, 0.3)]
      >>> weights = [0.2, 0.3, 0.5]
      >>> result = aggregator.compute_ufloat(values=values, weights=weights)
      >>> print(result)
-     -0.69+/-0.23
+     0.25+/-0.19
     """  # noqa: E501
 
     def __init__(self, params: Optional[Dict[str, Any]] = None):
@@ -105,7 +113,9 @@ class WeightedDeviationIndexAggregation(Aggregation):
         self._validate_and_set_parameters(params)
 
     def compute_numeric(
-        self, values: List[float], weights: Optional[List[float]] = None
+        self,
+        values: List[Union[float, None]],
+        weights: Optional[List[Union[float, None]]] = None,
     ) -> float:
         """
         Compute the weighted deviation index for numeric input values.
@@ -128,7 +138,9 @@ class WeightedDeviationIndexAggregation(Aggregation):
         )
 
     def compute_ufloat(
-        self, values: List[UFloat], weights: Optional[List[float]] = None
+        self,
+        values: List[Union[UFloat, None]],
+        weights: Optional[List[Union[float, None]]] = None,
     ) -> UFloat:
         """
         Compute the weighted deviation index for uncertain float input values.

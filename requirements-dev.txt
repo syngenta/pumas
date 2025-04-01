@@ -14,4 +14,5 @@ isort
 pre-commit
 jupyter
 black[jupyter]
+uncertainties
 scipy

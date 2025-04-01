@@ -2,7 +2,10 @@ from typing import List, Tuple, Union
 
 import pytest
 
-from pumas.uncertainty.uncertainties_wrapper import UFloat, ufloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    ufloat,
+)
 
 
 @pytest.fixture

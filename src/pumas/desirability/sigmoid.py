@@ -5,7 +5,10 @@ from typing import Any, Callable, Dict, Optional, Union, cast
 
 from pumas.architecture.exceptions import InvalidBoundaryError
 from pumas.desirability.base_models import Desirability
-from pumas.uncertainty.uncertainties_wrapper import UFloat, umath
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    umath,
+)
 
 
 def hard_sigmoid(x: Union[float, UFloat], k: float) -> Union[float, UFloat]:

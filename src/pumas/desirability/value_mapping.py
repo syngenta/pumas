@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from pumas.desirability.base_models import Desirability
-from pumas.uncertainty.uncertainties_wrapper import UFloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 
 def value_mapping(x: str, mapping: Dict[str, float], shift: float = 0.0) -> float:

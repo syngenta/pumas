@@ -1,7 +1,7 @@
 # type: ignore
 import pytest
 
-from pumas.utils.parallel_utils import parallelize, parallelize_with_indices
+from pumas.parallelization.parallel_utils import parallelize, parallelize_with_indices
 
 
 def square(x):

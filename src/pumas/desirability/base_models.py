@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from pumas.architecture.parametrized_strategy import AbstractParametrizedStrategy
-from pumas.uncertainty.uncertainties_wrapper import UFloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 
 class Desirability(AbstractParametrizedStrategy):

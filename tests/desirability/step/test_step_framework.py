@@ -1,7 +1,7 @@
 import pytest
 
 from pumas.desirability import desirability_catalogue
-from pumas.uncertainty.uncertainties_wrapper import ufloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import ufloat
 
 
 @pytest.mark.parametrize(

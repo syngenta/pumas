@@ -192,7 +192,7 @@ from pumas.architecture.exceptions import (
     ParameterUpdateAttributeWarning,
     ParameterValueNotSet,
 )
-from pumas.uncertainty.uncertainties_wrapper import UFloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 # monkey patching the name attribute that is missing from the Iterable type
 Iterable.__name__ = "Iterable"

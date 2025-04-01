@@ -6,7 +6,10 @@ from typing import Any, Dict, Optional, Union
 from pumas.architecture.exceptions import InvalidBoundaryError
 from pumas.desirability.base_models import Desirability
 from pumas.desirability.sigmoid import sigmoid
-from pumas.uncertainty.uncertainties_wrapper import UFloat, umath
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    umath,
+)
 
 
 def sigmoid_bell(
@@ -141,7 +144,7 @@ class SigmoidBell(Desirability):
     >>> print(f"{result:.2f}")
     1.00
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> from uncertainties import ufloat
     >>> result = desirability.compute_ufloat(x=ufloat(50.0, 20.0))
     >>> print(result)
     0.9999999+/-0.0000018

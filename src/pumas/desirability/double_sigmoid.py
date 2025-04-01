@@ -6,7 +6,10 @@ from typing import Any, Dict, Optional, Union
 from pumas.architecture.exceptions import InvalidBoundaryError
 from pumas.desirability.base_models import Desirability
 from pumas.desirability.sigmoid import hard_sigmoid, stable_sigmoid
-from pumas.uncertainty.uncertainties_wrapper import UFloat, umath
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
+    umath,
+)
 
 
 def double_sigmoid(

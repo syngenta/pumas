@@ -1,10 +1,10 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 
 from pumas.aggregation.aggregation_utils import run_data_validation_pipeline
 from pumas.aggregation.base_models import Aggregation
-from pumas.uncertainty.uncertainties_wrapper import UFloat
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 
 def weighted_harmonic_mean(values, weights):
@@ -90,7 +90,7 @@ class WeightedHarmonicMeanAggregation(Aggregation):
     >>> print(f"{result:.2f}")
     1.94
 
-    >>> from pumas.uncertainty.uncertainties_wrapper import ufloat
+    >>> from uncertainties import ufloat
     >>> values = [ufloat(1.0, 0.1), ufloat(2.0, 0.2), ufloat(3.0, 0.3)]
     >>> weights = [0.2, 0.3, 0.5]
     >>> result = aggregator.compute_ufloat(values=values, weights=weights)
@@ -104,7 +104,9 @@ class WeightedHarmonicMeanAggregation(Aggregation):
         self._validate_and_set_parameters(params)
 
     def compute_numeric(
-        self, values: List[float], weights: Optional[List[float]] = None
+        self,
+        values: List[Union[float, None]],
+        weights: Optional[List[Union[float, None]]] = None,
     ) -> float:
         """
         Compute the  weighted harmonic mean for uncertain float input values.
@@ -125,7 +127,9 @@ class WeightedHarmonicMeanAggregation(Aggregation):
         )
 
     def compute_ufloat(
-        self, values: List[UFloat], weights: Optional[List[float]] = None
+        self,
+        values: List[Union[UFloat, None]],
+        weights: Optional[List[Union[float, None]]] = None,
     ) -> UFloat:
         """
         Compute the  weighted harmonic mean for uncertain float input values.

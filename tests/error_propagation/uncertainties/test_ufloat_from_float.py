@@ -1,10 +1,12 @@
 # type: ignore
 import pytest
 
-from pumas.uncertainty.uncertainties_wrapper import (
-    UFloat,
+from pumas.uncertainty_management.uncertainties.ufloat_converters import (
     float_to_ufloat_conversion_catalogue,
     ufloat_from_float,
+)
+from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
+    UFloat,
     ufloat_from_str,
 )
 
