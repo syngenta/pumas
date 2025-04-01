@@ -1,0 +1,53 @@
+{
+        "objectives": [
+            {
+                "name": "quality",
+                "desirability_function": {
+                    "name": "sigmoid",
+                    "parameters": {
+                        "low": 1.0,
+                        "high": 10.0,
+                        "k": 0.1,
+                        "shift": 0.0,
+                        "base": 10.0
+                    }
+                },
+                "weight": 1.0
+
+            },
+            {
+                "name": "efficiency",
+                "desirability_function": {
+                    "name": "sigmoid",
+                    "parameters": {
+                        "low": 0.2,
+                        "high": 0.8,
+                        "k": 0.1,
+                        "shift": 0.0,
+                        "base": 10.0
+                    }
+                },
+                "weight": 2.0
+
+            },
+            {
+                "name": "cost",
+                "desirability_function": {
+                    "name": "sigmoid",
+                    "parameters": {
+                        "low": 20.0,
+                        "high": 80.0,
+                        "k": -0.5,
+                        "shift": 0.0,
+                        "base": 10.0
+                    }
+                },
+                "weight": 3.0
+
+            }
+        ],
+        "aggregation_function": {
+            "name": "geometric_mean",
+            "parameters": {}
+        }
+    }

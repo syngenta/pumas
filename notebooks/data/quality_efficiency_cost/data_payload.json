@@ -1,0 +1,7 @@
+{
+    "A":{ "quality": 1.0, "cost": 30.0, "efficiency": 0.7},
+    "B":{ "quality": 5.0, "cost": 40.0, "efficiency": 0.2},
+    "C":{ "quality": 3.0, "cost": 10.0, "efficiency": 0.9},
+    "D":{ "quality": 6.0, "cost": 60.0, "efficiency": 0.4},
+    "E":{ "quality": 2.0, "cost": 80.0, "efficiency": 0.5}
+}

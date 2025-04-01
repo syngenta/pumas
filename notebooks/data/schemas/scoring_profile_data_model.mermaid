@@ -1,0 +1,30 @@
+classDiagram
+    class Profile {
+        +List[Objective] objectives
+        +AggregationFunction aggregation_function
+        +validate_weights()
+        +validate_unique_objective_names()
+        +write_to_file(file_path)
+        +read_from_file(file_path)
+    }
+    class Objective {
+        +str name
+        +DesirabilityFunction desirability_function
+        +Optional[float] weight
+        +Optional[Literal] value_type
+        +Optional[Literal] kind
+    }
+    class DesirabilityFunction {
+        +str name
+        +Dict[str, Any] parameters
+        +validate_desirability_function_name()
+        +validate_desirability_function_parameters()
+    }
+    class AggregationFunction {
+        +str name
+        +Optional[Dict[str, Any]] parameters
+        +validate_aggregation_function()
+    }
+    Profile "1" -- "*" Objective
+    Profile "1" -- "1" AggregationFunction
+    Objective "1" -- "1" DesirabilityFunction
