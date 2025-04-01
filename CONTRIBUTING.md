@@ -2,7 +2,7 @@
 
 First off, thanks for taking the time to contribute! :tada::+1:
 
-The following is a set of guidelines for contributing to pumas, which are hosted in the [Syngenta Organization](https://github.com/syngenta) on GitHub. 
+The following is a set of guidelines for contributing to pumas, which are hosted in the [Syngenta Organization](https://github.com/syngenta) on GitHub.
 These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 ## Contribution Terms and License
@@ -66,6 +66,11 @@ If you would like to contribute to the package, we recommend the following devel
     python -m black src/pumas
     # checking flake8
     python -m flake8 --ignore E501 src/pumas
+    ```
+   Or use the pre-commit hooks provided in the repository:
+   ```sh
+    pre-commit install
+    pre-commit run --all-files
     ```
 
 8. Once the tests and checks passes, but most importantly you are happy with the implemented feature, commit your changes.

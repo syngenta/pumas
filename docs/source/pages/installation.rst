@@ -17,14 +17,11 @@ Development installation
 
 If you are planning to contribute to the code or if you want to implement some custom-defined
 functionality, we recommend the installation for development. This will require some additional
-packages. To install pumas in development setting simply type:
+packages. To install MPSTK in development setting simply type:
 
 
 .. code-block:: console
 
-    $ git clone
+    $ git clone git@github.com:syngenta/pumas.git
     $ cd pumas
     $ pip install -e .[dev]
-
-
-
