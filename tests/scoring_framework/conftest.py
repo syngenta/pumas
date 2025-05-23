@@ -1,7 +1,7 @@
 # conftest.py
 import pytest
 
-from pumas.scoring_profile.scoring_profile import ScoringProfile
+from pumas.scoring_profile.models import ScoringProfile
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from pumas.scoring_profile.scoring_profile import (
+from pumas.scoring_profile.models import (
     AggregationFunction,
     DesirabilityFunction,
     Objective,

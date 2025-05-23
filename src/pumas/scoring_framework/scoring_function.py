@@ -6,11 +6,7 @@ from pumas.desirability import desirability_catalogue
 from pumas.desirability.base_models import Desirability
 from pumas.scoring_framework.models import ObjectPropertiesMap, ScoringResult
 from pumas.scoring_framework.type_definitions import R, T
-from pumas.scoring_profile.scoring_profile import (
-    AggregationFunction,
-    Objective,
-    ScoringProfile,
-)
+from pumas.scoring_profile.models import AggregationFunction, Objective, ScoringProfile
 
 
 class TypedDesirability(Generic[T, R]):
