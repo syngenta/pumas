@@ -7,6 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pumas"
 version = "1.0.5"
+description = "PUMAS is a Python package implementing a multi-objective scoring systems based on desirability functions and aggregation."
 requires-python = ">=3.9"
 # https://pypi.org/classifiers/
 classifiers = [
@@ -25,7 +26,6 @@ classifiers = [
 ]
 dynamic = [
     "dependencies",
-    "description",
     "optional-dependencies",
     "readme",
 ]
@@ -36,6 +36,9 @@ repository = "https://github.com/syngenta/pumas"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"pumas" = ["py.typed"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements.txt"}
