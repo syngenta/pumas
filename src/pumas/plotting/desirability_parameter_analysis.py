@@ -231,16 +231,16 @@ def plot_multistep_analysis():
         {
             "parameter_name": "coordinates",
             "title": "Sharp filter-like function",
-            "values": [[(49.5, 0.0), (50.5, 1.0)]],
+            "values": [[(50.0, 0.0), (50.0, 1.0)]],
         },
         {
             "parameter_name": "coordinates",
             "title": "Sharp filter-like function",
-            "values": [[(49.5, 1.0), (50.5, 0.0)]],
+            "values": [[(50.0, 1.0), (50.0, 0.0)]],
         },
         {
             "parameter_name": "coordinates",
-            "title": "Growing with plateau",
+            "title": "Growing to plateau",
             "values": [[(30.0, 0.0), (40.0, 0.8), (50.0, 1.0)]],
         },
         {

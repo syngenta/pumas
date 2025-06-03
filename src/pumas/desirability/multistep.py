@@ -1,11 +1,23 @@
 import math
-from collections import Counter
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, field_validator
 
 from pumas.desirability.base_models import Desirability
 from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
+
+
+class DesirabilityMultistepError(Exception):
+    """Base class for exceptions in the Desirability Multistep module."""
+
+
+class InvalidParameterTypeError(DesirabilityMultistepError):
+    """Raised when a parameter has an invalid type."""
+
+
+class InvalidCoordinateError(DesirabilityMultistepError):
+    """Raised when the coordinates provided are invalid."""
 
 
 class Point(BaseModel):
@@ -21,11 +33,12 @@ class Point(BaseModel):
     y: float
 
     @field_validator("x", "y")
+    @classmethod
     def validate_finite(cls, v):
         if not isinstance(v, (int, float)) or (
             isinstance(v, float) and (math.isnan(v) or math.isinf(v))
         ):
-            raise ValueError("Coordinates must be finite numbers")
+            raise InvalidCoordinateError("Coordinates must be finite numbers")
         return v
 
     def __repr__(self):
@@ -40,109 +53,144 @@ class Point(BaseModel):
         return math.isclose(self.x, other.x) and math.isclose(self.y, other.y)
 
 
-def check_empty_input_coordinates(coordinates: List[Tuple[float, float]]) -> None:
-    """Check if the input coordinates list is empty."""
+@dataclass
+class Wall:
+    """
+    Represents a vertical wall in the multistep function.
+
+    A wall consists of two points with the same x-coordinate.
+    """
+
+    x_coordinate: float
+    points: List[Point]  # Always contains exactly 2 points
+
+    @property
+    def active_point(self) -> Point:
+        """Return the point that should be used for evaluation at this wall."""
+        return self.points[0]  # The second point in the wall is the active one
+
+
+def check_empty_coordinates(coordinates: List[Tuple[float, float]]) -> None:
+    """Check if coordinates list is empty."""
     if not coordinates:
-        raise ValueError("Coordinates list cannot be empty.")
+        raise InvalidCoordinateError("Coordinates list cannot be empty.")
 
 
-def check_single_input_coordinate(coordinates: List[Tuple[float, float]]) -> None:
-    """Check if there's only one input coordinate."""
+def check_insufficient_coordinates(coordinates: List[Tuple[float, float]]) -> None:
+    """Check if there are enough coordinates to form a valid multistep."""
     if len(coordinates) == 1:
-        raise ValueError(
+        raise InvalidCoordinateError(
             "At least two coordinates are required to form a valid multistep."
         )
 
 
-def build_points(
+def check_duplicate_points(points: List[Point]) -> None:
+    """Check for duplicate coordinates (points with the same x and y values)."""
+    seen_coords = set()
+    duplicates = []
+
+    for point in points:
+        coord = (point.x, point.y)
+        if coord in seen_coords:
+            duplicates.append(coord)
+        else:
+            seen_coords.add(coord)
+
+    if duplicates:
+        raise InvalidCoordinateError(
+            f"Duplicate coordinates found: "
+            f"{', '.join(str(coord) for coord in duplicates)}"
+        )
+
+
+def check_boundaries_y_coordinates(points: List[Point]) -> None:
+    """Check that all y-coordinates are between 0 and 1."""
+    invalid_points = [p for p in points if not (0 <= p.y <= 1)]
+
+    if invalid_points:
+        raise InvalidCoordinateError(
+            f"All y-coordinates must be between 0 and 1. "
+            f"Found points with invalid y: {invalid_points}"
+        )
+
+
+# Point creation and organization - Open/Closed Principle
+def create_points_from_input_coordinates(
     coordinates: List[Tuple[float, float]]
-) -> Tuple[Set[Point], List[Tuple[float, float]]]:
-    """
-    Convert input coordinates to Point objects.
-
-    Returns:
-        Tuple[Set[Point], List[Tuple[float, float]]]:
-            A set of valid Points and a list of failed coordinates.
-    """
-    points = set()
+) -> List[Point]:
+    """Create Point objects from coordinate tuples."""
+    points = []
     failed_coordinates = []
-
     for x, y in coordinates:
         try:
             point = Point(x=x, y=y)
-            points.add(point)
+            points.append(point)
         except (ValueError, TypeError):
             failed_coordinates.append((x, y))
-
-    return points, failed_coordinates
-
-
-def check_duplicate_x_coordinates(points: Set[Point]) -> None:
-    """Check for duplicate x-coordinates in the set of Points."""
-    x_coords = [point.x for point in points]
-    duplicate_x_coords = [x for x, count in Counter(x_coords).items() if count > 1]
-    if duplicate_x_coords:
-        raise ValueError("Duplicate x-coordinates found.")
-
-
-def check_boundaries_y_coordinates(points: Set[Point]) -> None:
-    """Check if all y-coordinates are within the [0, 1] range."""
-
-    out_of_bounds = [point for point in points if not 0 <= point.y <= 1]
-    if out_of_bounds:
-        raise ValueError(
-            "Y-coordinate must be between 0 and 1."
-            "Please review the following coordinates: "
-            ", ".join(str(coord) for coord in out_of_bounds)
-        )
-
-
-def check_failures(failed_coordinates: List[Tuple[float, float]]) -> None:
-    """Raise an error if there were any failed coordinate conversions."""
     if failed_coordinates:
-        raise ValueError(
-            f"Error converting "
-            f"coordinates to Point: "
-            f"{', '.join(str(coord) for coord in failed_coordinates)}"
+        raise InvalidCoordinateError(
+            f"Error converting coordinates to Point: {failed_coordinates}"
         )
 
+    return [Point(x=x, y=y) for x, y in coordinates]
 
-def check_single_coordinate(points: Set[Point]) -> None:
-    """Check if there's only one unique coordinate after conversion."""
-    if len(points) == 1:
-        raise ValueError(
-            "At least two DIFFERENT coordinates are required to form a valid multistep."
+
+def sort_points_preserving_order(points: List[Point]) -> List[Point]:
+    """
+    Sort points by x-coordinate while preserving the original order of points
+    with the same x-coordinate.
+    """
+    # Group points by x-coordinate and preserve original order
+    points_by_x: Dict[float, List[Tuple[int, Point]]] = {}
+    for i, point in enumerate(points):
+        if point.x not in points_by_x:
+            points_by_x[point.x] = []
+        points_by_x[point.x].append((i, point))
+
+    # Create sorted list of points
+    sorted_x = sorted(points_by_x.keys())
+    sorted_points: List[Point] = []
+    for x in sorted_x:
+        # Sort by original index to preserve input order
+        sorted_points_at_x = sorted(points_by_x[x], key=lambda item: item[0])
+        sorted_points.extend(p for _, p in sorted_points_at_x)
+
+    return sorted_points
+
+
+def build_wall_map(points: List[Point]) -> Dict[float, Wall]:
+    """
+    Identify walls from a list of points.
+
+    A wall is defined as two points sharing the same x-coordinate.
+    """
+    # Step 1: Group points by x-coordinate while preserving original order
+    points_by_x: Dict[float, List[Point]] = {}
+    for point in points:
+        if point.x not in points_by_x:
+            points_by_x[point.x] = []
+        points_by_x[point.x].append(point)
+
+    # Step 2: Create walls from groups with exactly 2 points
+    wall_map: Dict[float, Wall] = {}
+    for x, points_at_x in points_by_x.items():
+        if len(points_at_x) >= 2:
+            wall_map[x] = Wall(x_coordinate=x, points=points_at_x)
+
+    return wall_map
+
+
+def check_wall_map(wall_map: Dict[float, Wall]) -> None:
+    """Check that there are no more than 2 points with the same x-coordinate."""
+    invalid_walls = {x: wall for x, wall in wall_map.items() if len(wall.points) != 2}
+
+    if invalid_walls:
+        raise InvalidCoordinateError(
+            f"No more than 2 points can share the same x-coordinate. "
+            f"Found {len(invalid_walls)} groups of invalid walls."
+            f" Found walls: "
+            f"{', '.join(f'{x}: {wall.points}' for x, wall in invalid_walls.items())}"
         )
-
-
-def sort_points(points: Set[Point]) -> List[Point]:
-    """Sort Points by their x-coordinate."""
-    return sorted(points, key=lambda p: p.x)
-
-
-class CoordinateManager:
-    """
-    Manages the coordinates for the MultiStep desirability function.
-
-    This class handles the validation and preparation of input coordinates.
-
-    Attributes:
-        points (List[Point]): A list of Point objects sorted by x-coordinate.
-    """
-
-    def __init__(self, coordinates: List[Tuple[float, float]]):
-        check_empty_input_coordinates(coordinates=coordinates)
-        check_single_input_coordinate(coordinates=coordinates)
-
-        points, failed_coordinates = build_points(coordinates)
-
-        check_failures(failed_coordinates=failed_coordinates)
-
-        check_single_coordinate(points=points)
-        check_duplicate_x_coordinates(points=points)
-        check_boundaries_y_coordinates(points=points)
-
-        self.points = sort_points(points=points)
 
 
 def interpolate(x: Union[float, UFloat], p1: Point, p2: Point) -> Union[float, UFloat]:
@@ -161,9 +209,61 @@ def interpolate(x: Union[float, UFloat], p1: Point, p2: Point) -> Union[float, U
     return p1.y + t * (p2.y - p1.y)  # type: ignore
 
 
+def evaluate_at_point(
+    x: Union[float, UFloat], points: List[Point], wall_map: Dict[float, Wall]
+) -> Union[float, UFloat]:
+    # Check if x is at a wall
+    if x in wall_map:
+        return wall_map[x].active_point.y  # type: ignore  # this might not work with ufloat # noqa E501
+
+    # Check if x is outside the x-range
+    if x <= points[0].x:  # type: ignore  # this might not work with ufloat
+        return points[0].y
+    if x >= points[-1].x:  # type: ignore  # this might not work with ufloat
+        return points[-1].y
+
+    # Find points for interpolation
+    for i in range(len(points) - 1):
+        p1 = points[i]
+        p2 = points[i + 1]
+
+        if p1.x <= x <= p2.x:  # type: ignore  # this might not work with ufloat
+            return interpolate(x, p1, p2)
+
+    raise ValueError(f"Unable to interpolate for x={x}")
+
+
+class CoordinateManager:
+    """
+    Manages coordinates for the multistep function.
+
+    This class is responsible for validating, sorting, and organizing coordinates,
+    but not for evaluating the function at specific points.
+    """
+
+    def __init__(self, coordinates: List[Tuple[float, float]]):
+        """Initialize with a list of coordinate tuples."""
+        # Validate input
+        check_empty_coordinates(coordinates)
+        check_insufficient_coordinates(coordinates)
+
+        # Create and validate points
+        points = create_points_from_input_coordinates(coordinates)
+        check_duplicate_points(points)
+        check_boundaries_y_coordinates(points)
+        points_sorted = sort_points_preserving_order(points)
+
+        # Create and validate walls
+        wall_map = build_wall_map(points_sorted)
+        check_wall_map(wall_map)
+
+        self.points = points_sorted
+        self.wall_map = wall_map
+
+
 def multistep(
     x: Union[float, UFloat],
-    coordinates: Iterable[Tuple[float, float]],
+    coordinates: List[Tuple[float, float]],
     shift: float = 0.0,
 ) -> Union[float, UFloat]:
     """
@@ -176,32 +276,17 @@ def multistep(
 
     Returns:
         Union[float, UFloat]: The computed desirability value.
-
-    Raises:
-        ValueError: If interpolation fails.
     """  # noqa: E501
+    coordinate_manager = CoordinateManager(coordinates=coordinates)
 
-    cm = CoordinateManager(coordinates=list(coordinates))
-    points = cm.points
+    wall_map = coordinate_manager.wall_map
+    points = coordinate_manager.points
 
-    result = None
-    if x <= points[0].x:  # type: ignore  # this might not work with ufloat
-        result = points[0].y
-    elif x >= points[-1].x:  # type: ignore  # this might not work with ufloat
-        result = points[-1].y
-    else:
-        for i in range(len(points) - 1):
-            if points[i].x <= x <= points[i + 1].x:  # type: ignore  # this might not work with ufloat # noqa: E501
-                result = interpolate(x, points[i], points[i + 1])  # type: ignore # review usage of type int in Point  # noqa: E501
-                break
-
-    if result is None:
-        raise ValueError(f"Unable to interpolate for x={x}")
+    # Evaluate at the given x
+    result = evaluate_at_point(x=x, points=points, wall_map=wall_map)
 
     # Apply the shift
-    result = result * (1 - shift) + shift
-
-    return result
+    return result * (1 - shift) + shift
 
 
 compute_numeric_multistep = multistep
@@ -253,18 +338,17 @@ class MultiStep(Desirability):
         Parameters:
             params (Optional[Dict[str, Any]]): Initial parameters for the multistep function.
 
-        Attributes:
+        Content of params:
             coordinates (Iterable[Tuple[float, float]]):
                 The coordinates defining the multistep function. Each tuple contains (x, y) values.
             shift (float): Vertical shift of the function, range [0.0, 1.0], default 0.0.
 
 
         Raises:
-            ValueError: If the coordinates list is empty.
-            ValueError: If only one coordinate is provided (at least two are required).
-            ValueError: If duplicate x-coordinates are found.
-            ValueError: If any y-coordinate is not between 0 and 1.
-            ValueError: If any coordinate cannot be converted to a
+            InvalidCoordinateError: If the coordinates list is empty.
+            InvalidCoordinateError: If only one coordinate is provided (at least two are required).
+            InvalidCoordinateError: If any y-coordinate is not between 0 and 1.
+            InvalidCoordinateError: If any coordinate cannot be converted to a
                 valid Point object (internal representation of coordinates).
 
 

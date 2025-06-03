@@ -2,7 +2,11 @@ from math import isclose
 
 import pytest
 
-from pumas.desirability.multistep import CoordinateManager, Point
+from pumas.desirability.multistep import (
+    CoordinateManager,
+    InvalidCoordinateError,
+    Point,
+)
 
 
 def test_point_init():
@@ -70,77 +74,71 @@ def test_point_hash():
 
 def test_point_invalid_coordinates():
     """
-    Test that Point initialization raises a ValueError for non-finite coordinates.
+    Test that Point initialization raises a InvalidCoordinateError for non-finite coordinates.
     """  # noqa E501
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidCoordinateError):
         Point(x=float("inf"), y=2.0)
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidCoordinateError):
         Point(x=1.0, y=float("nan"))
 
 
 def test_coordinate_manager_empty_list():
     """
-    Test that CoordinateManager raises a ValueError when initialized with an empty list.
+    Test that CoordinateManager raises a InvalidCoordinateError when initialized with an empty list.
     """  # noqa E501
-    with pytest.raises(ValueError, match="Coordinates list cannot be empty."):
+    with pytest.raises(
+        InvalidCoordinateError, match="Coordinates list cannot be empty."
+    ):
         CoordinateManager([])
 
 
 def test_coordinate_manager_single_coordinate():
     """
-    Test that CoordinateManager raises a ValueError when initialized with a single coordinate.
+    Test that CoordinateManager raises a InvalidCoordinateError when initialized with a single coordinate.
     At least two coordinates are required to define a valid multistep function.
     """  # noqa E501
     with pytest.raises(
-        ValueError,
+        InvalidCoordinateError,
         match="At least two coordinates are required to form a valid multistep.",
     ):
-        CoordinateManager([(1.0, 2.0)])
-
-
-def test_coordinate_manager_single_coordinate_after_deduplication():
-    """
-    Test that CoordinateManager raises a ValueError when initialized with a single coordinate.
-    At least two coordinates are required to define a valid multistep function.
-    """  # noqa E501
-    with pytest.raises(
-        ValueError,
-        match="At least two DIFFERENT coordinates "
-        "are required to form a valid multistep.",
-    ):
-        CoordinateManager([(1.0, 2.0), (1.0, 2.0)])
+        CoordinateManager([(1.0, 1.0)])
 
 
 def test_coordinate_manager_invalid_coordinates():
     """
-    Test that CoordinateManager raises a ValueError when given invalid coordinate values.
+    Test that CoordinateManager raises a InvalidCoordinateError when given invalid coordinate values.
     This includes non-numeric values and mixed valid/invalid coordinates.
     """  # noqa E501
-    with pytest.raises(ValueError, match="Error converting coordinates to Point: "):
+    with pytest.raises(
+        InvalidCoordinateError, match="Error converting coordinates to Point: "
+    ):
         CoordinateManager([(1.0, 2.0), (1.0, "invalid"), (3.0, 4.0)])  # type: ignore
-    with pytest.raises(ValueError, match="Error converting coordinates to Point: "):
+    with pytest.raises(
+        InvalidCoordinateError, match="Error converting coordinates to Point: "
+    ):
         CoordinateManager([(1.0, 2.0), ("invalid", 0.1), (3.0, 4.0)])  # type: ignore
-    with pytest.raises(ValueError, match="Error converting coordinates to Point: "):
+    with pytest.raises(
+        InvalidCoordinateError, match="Error converting coordinates to Point: "
+    ):
         CoordinateManager([(1.0, 2.0), ("invalid", "invalid"), (3.0, 4.0)])  # type: ignore  # noqa E501
 
 
 def test_coordinate_manager_duplicate_x_coordinates():
     """
-    Test that CoordinateManager raises a ValueError when given duplicate x-coordinates.
+    Test that CoordinateManager raises a InvalidCoordinateError when given duplicate x-coordinates.
     Duplicate x-coordinates would lead to ambiguity in the multistep function.
     """  # noqa E501
-    with pytest.raises(ValueError):
-        CoordinateManager([(1.0, 2.0), (1.0, 3.0), (3.0, 4.0)])
+    CoordinateManager([(1.0, 0.0), (1.0, 1.0)])
 
 
 def test_coordinate_manager_out_of_bounds_y_coordinates():
     """
-    Test that CoordinateManager raises a ValueError when y-coordinates are out of the [0, 1] range.
+    Test that CoordinateManager raises a InvalidCoordinateError when y-coordinates are out of the [0, 1] range.
     Y-coordinates must be between 0 and 1 for a valid desirability function.
     """  # noqa E501
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidCoordinateError):
         CoordinateManager([(1.0, 2.0), (3.0, 4.0), (5.0, 1.1)])
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidCoordinateError):
         CoordinateManager([(1.0, 2.0), (3.0, 4.0), (5.0, -0.1)])
 
 
@@ -184,3 +182,33 @@ def test_coordinate_manager_boundary_y_values():
     coordinates = [(1.0, 0.0), (2.0, 0.5), (3.0, 1.0)]
     manager = CoordinateManager(coordinates)
     assert len(manager.points) == 3
+
+
+def test_coordinate_manager_one_wall():
+    """
+    Test that CoordinateManager identifies one wall.
+    """
+    coordinates = [(1.0, 0.0), (1.0, 0.5), (3.0, 1.0)]
+    manager = CoordinateManager(coordinates)
+    assert len(manager.wall_map) == 1
+
+
+def test_coordinate_manager_more_than_one_wall():
+    """
+    Test that CoordinateManager identifies more than wall.
+    """
+    coordinates = [(1.0, 0.0), (1.0, 0.5), (3.0, 1.0), (3.0, 0.0)]
+    manager = CoordinateManager(coordinates)
+    assert len(manager.wall_map) == 2
+
+
+def test_coordinate_manager_triple_wall_fails():
+    """
+    Test that CoordinateManager identifies more than wall.
+    """
+    coordinates = [(1.0, 0.0), (1.0, 0.5), (1.0, 1.0)]
+    with pytest.raises(
+        InvalidCoordinateError,
+        match="No more than 2 points can share the same x-coordinate.",
+    ):
+        _ = CoordinateManager(coordinates)
