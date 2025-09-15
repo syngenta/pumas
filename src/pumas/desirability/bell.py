@@ -99,6 +99,7 @@ def get_bell_slope_pivot_points(
 
 
 class Bell(Desirability):
+    name = "bell"
     """
     Bell desirability function implementation.
 

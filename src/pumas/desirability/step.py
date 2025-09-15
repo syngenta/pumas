@@ -175,6 +175,7 @@ def compute_ufloat_step(
 
 
 class RightStep(Desirability):
+    name = "rightstep"
     """
     Right Step desirability function implementation.
 
@@ -299,6 +300,7 @@ class RightStep(Desirability):
 
 
 class LeftStep(Desirability):
+    name = "leftstep"
     """
     Left Step desirability function implementation.
 
@@ -422,6 +424,7 @@ class LeftStep(Desirability):
 
 
 class Step(Desirability):
+    name = "step"
     """
     Centered Step desirability function implementation.
 

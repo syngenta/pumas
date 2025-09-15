@@ -18,6 +18,7 @@ def value_mapping(x: str, mapping: Dict[str, float], shift: float = 0.0) -> floa
 
 
 class ValueMapping(Desirability):
+    name = "value_mapping"
     """
         Value Mapping desirability function implementation.
 

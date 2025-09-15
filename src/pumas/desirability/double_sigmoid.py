@@ -86,6 +86,7 @@ compute_ufloat_sigmoid = partial(double_sigmoid, math_module=umath)
 
 
 class DoubleSigmoid(Desirability):
+    name = "double_sigmoid"
     """
     Double Sigmoid desirability function implementation.
 

@@ -122,6 +122,7 @@ compute_ufloat_sigmoid: Callable[
 
 
 class Sigmoid(Desirability):
+    name = "sigmoid"
     """
 
     Sigmoid desirability function implementation.

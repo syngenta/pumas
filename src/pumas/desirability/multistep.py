@@ -294,6 +294,7 @@ compute_ufloat_multistep = multistep
 
 
 class MultiStep(Desirability):
+    name = "multistep"
     """
         MultiStep desirability function implementation.
 
