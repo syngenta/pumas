@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import ClassVar
 
 from pumas.architecture.parametrized_strategy import AbstractParametrizedStrategy
 from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
@@ -6,6 +7,9 @@ from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFl
 
 class Desirability(AbstractParametrizedStrategy):
     """Abstract base class for desirability functions."""
+
+    # Concrete subclasses must define this class attribute with a non-empty string.
+    name: ClassVar[str]
 
     @abstractmethod
     def compute_numeric(self, x: float) -> float:
