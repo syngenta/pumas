@@ -229,4 +229,4 @@ class Catalogue:
             if hasattr(item_instance, '__class__') and item_instance.__class__ is registered_item:
                 return name
         
-        raise ValueError("Item not found in catalogue")
+        raise ValueError("Item not found in catalogue") # This could also return None or a default value if we prefer
