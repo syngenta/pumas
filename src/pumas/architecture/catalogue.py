@@ -194,8 +194,8 @@ class Catalogue:
             return item
 
         return decorator
-    
-    def get_name_from_instance(self, item_instance: Any) -> str:
+
+    def get_name_from_instance(self, item_instance: Any) -> Any:
         """
         Get the registered name for a given item instance or class.
 
@@ -216,17 +216,24 @@ class Catalogue:
             # Direct match (same object)
             if registered_item is item_instance:
                 return name
-            
+
             # Check if item_instance is an instance of a registered class
             try:
-                if hasattr(registered_item, '__name__') and isinstance(item_instance, registered_item):
+                if hasattr(registered_item, "__name__") and isinstance(
+                    item_instance, registered_item
+                ):
                     return name
             except TypeError:
                 # isinstance raises TypeError if registered_item is not a class
                 pass
-                
+
             # Check if they're the same class
-            if hasattr(item_instance, '__class__') and item_instance.__class__ is registered_item:
+            if (
+                hasattr(item_instance, "__class__")
+                and item_instance.__class__ is registered_item
+            ):
                 return name
-        
-        raise ValueError("Item not found in catalogue") # This could also return None or a default value if we prefer
+
+        raise ValueError(
+            "Item not found in catalogue"
+        )  # This could also return None or a default value if we prefer
