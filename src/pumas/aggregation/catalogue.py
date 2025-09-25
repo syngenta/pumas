@@ -12,23 +12,27 @@ aggregation_catalogue = Catalogue(item_type=Aggregation)
 
 # Register all aggregation methods here
 aggregation_catalogue.register(
-    name="arithmetic_mean", item=WeightedArithmeticMeanAggregation
+    name=WeightedArithmeticMeanAggregation.name, item=WeightedArithmeticMeanAggregation
 )
 
 aggregation_catalogue.register(
-    name="geometric_mean", item=WeightedGeometricMeanAggregation
+    name=WeightedGeometricMeanAggregation.name, item=WeightedGeometricMeanAggregation
 )
 
 aggregation_catalogue.register(
-    name="harmonic_mean", item=WeightedHarmonicMeanAggregation
+    name=WeightedHarmonicMeanAggregation.name, item=WeightedHarmonicMeanAggregation
 )
 aggregation_catalogue.register(
-    name="deviation_index", item=WeightedDeviationIndexAggregation
+    name=WeightedDeviationIndexAggregation.name, item=WeightedDeviationIndexAggregation
 )
 
-aggregation_catalogue.register(name="summation", item=WeightedSummationAggregation)
+aggregation_catalogue.register(
+    name=WeightedSummationAggregation.name, item=WeightedSummationAggregation
+)
 
-aggregation_catalogue.register(name="product", item=WeightedProductAggregation)
+aggregation_catalogue.register(
+    name=WeightedProductAggregation.name, item=WeightedProductAggregation
+)
 
 # register new aggregation methods here
 # aggregation_catalogue.register(name=<name>", item=<NewAggregation>)
