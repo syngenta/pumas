@@ -98,6 +98,8 @@ class WeightedDeviationIndexAggregation(Aggregation):
      0.25+/-0.19
     """  # noqa: E501
 
+    name = "deviation_index"
+
     def __init__(self, params: Optional[Dict[str, Any]] = None):
         super().__init__()
         self._set_parameter_definitions(

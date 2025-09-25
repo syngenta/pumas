@@ -98,6 +98,8 @@ class WeightedHarmonicMeanAggregation(Aggregation):
     1.94+/-0.11
     """
 
+    name = "harmonic_mean"
+
     def __init__(self, params: Optional[Dict[str, Any]] = None):
         super().__init__()
         self._set_parameter_definitions({})
