@@ -77,6 +77,7 @@ compute_ufloat_sigmoid_bell = partial(sigmoid_bell, math_module=umath)
 
 
 class SigmoidBell(Desirability):
+    name = "sigmoid_bell"
     """
     Sigmoid Bell desirability function implementation.
 

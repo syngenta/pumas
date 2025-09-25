@@ -1,6 +1,7 @@
+import inspect
 import warnings
 from abc import ABC
-from typing import Any, Dict, Optional, Tuple, Type, Union
+from typing import Any, ClassVar, Dict, Optional, Tuple, Type, Union
 
 from pumas.architecture.exceptions import (
     InvalidInputTypeError,
@@ -12,6 +13,26 @@ from pumas.architecture.parameters import ParameterManager
 
 
 class AbstractParametrizedStrategy(ABC):
+    # Class attribute that concrete subclasses must define with a non-empty string.
+    name: ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        # Enforce presence of a non-empty class attribute
+        # `name` on concrete subclasses only
+        if inspect.isabstract(cls):
+            return
+        # Require that the subclass defines its own `name`
+        # (not inherited) and that it is a non-empty str
+        if (
+            "name" not in cls.__dict__
+            or not isinstance(cls.__dict__["name"], str)
+            or not cls.__dict__["name"].strip()
+        ):
+            raise TypeError(
+                f"{cls.__name__} must define a non-empty class attribute 'name'."
+            )
+
     def __init__(self, params: Optional[Dict[str, Any]] = None):
         self.parameter_manager: ParameterManager = ParameterManager()
         self._params = params

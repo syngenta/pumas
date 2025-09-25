@@ -63,6 +63,8 @@ class WeightedSummationAggregation(Aggregation):
      2.30+/-0.16
     """
 
+    name = "summation"
+
     def compute_numeric(
         self,
         values: List[Union[float, None]],
