@@ -1,11 +1,14 @@
 from abc import abstractmethod
-from typing import List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 
 from pumas.architecture.parametrized_strategy import AbstractParametrizedStrategy
 from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 
 class Aggregation(AbstractParametrizedStrategy):
+    # Concrete subclasses must define this class attribute with a non-empty string.
+    name: ClassVar[str]
+
     @abstractmethod
     def compute_numeric(
         self,
