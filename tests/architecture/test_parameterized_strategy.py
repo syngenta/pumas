@@ -20,7 +20,9 @@ from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (
 
 
 class NoParameterOneInput(AbstractParametrizedStrategy):
+    name = "NoParameterOneInput"
     def __init__(self):
+
         super().__init__()
         self._set_parameter_definitions({})
 
@@ -32,6 +34,7 @@ class NoParameterOneInput(AbstractParametrizedStrategy):
 
 
 class OneParameterOneInput(AbstractParametrizedStrategy):
+    name = "OneParameterOneInput"
     def __init__(self, params: Optional[Dict[str, Any]] = None):
         super().__init__()
         self._set_parameter_definitions(
@@ -61,6 +64,7 @@ class OneParameterOneInput(AbstractParametrizedStrategy):
 
 
 class ManyParameterOneInput(AbstractParametrizedStrategy):
+    name = "ManyParameterOneInput"
     def __init__(self, params: Optional[Dict[str, Any]] = None):
         super().__init__()
         self._set_parameter_definitions(
@@ -92,6 +96,7 @@ class ManyParameterOneInput(AbstractParametrizedStrategy):
 
 
 class OneParameterTwoInputs(AbstractParametrizedStrategy):
+    name = "OneParameterTwoInputs"
     def __init__(self, params: Optional[Dict[str, Any]] = None):
         super().__init__()
         self._set_parameter_definitions(
