@@ -245,7 +245,7 @@ class RightStep(Desirability):
                     "type": "float",
                     "min": float("-inf"),
                     "max": float("inf"),
-                    "default": None,
+                    "default": 0.0,
                 },
                 "high": {
                     "type": "float",
@@ -375,7 +375,7 @@ class LeftStep(Desirability):
                     "type": "float",
                     "min": float("-inf"),
                     "max": float("inf"),
-                    "default": None,
+                    "default": 0.0,
                 },
                 "shift": {"type": "float", "min": 0.0, "max": 1.0, "default": 0.0},
             }
