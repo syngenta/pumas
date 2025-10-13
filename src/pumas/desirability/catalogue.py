@@ -2,6 +2,7 @@ from pumas.architecture.catalogue import Catalogue
 from pumas.desirability.base_models import Desirability
 from pumas.desirability.bell import Bell
 from pumas.desirability.double_sigmoid import DoubleSigmoid
+from pumas.desirability.exponential_decay import ExponentialDecay
 from pumas.desirability.multistep import MultiStep
 from pumas.desirability.sigmoid import Sigmoid
 from pumas.desirability.sigmoid_bell import SigmoidBell
@@ -28,6 +29,8 @@ desirability_catalogue.register(name=RightStep.name, item=RightStep)
 desirability_catalogue.register(name=Step.name, item=Step)
 
 desirability_catalogue.register(name=ValueMapping.name, item=ValueMapping)
+
+desirability_catalogue.register(name=ExponentialDecay.name, item=ExponentialDecay)
 
 # Add more registrations as new desirabilities are created
 # desirability_catalogue.register(name=<name>", item=<NewDesirability>)

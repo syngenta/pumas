@@ -340,10 +340,8 @@ class MultiStep(Desirability):
             params (Optional[Dict[str, Any]]): Initial parameters for the multistep function.
 
         Content of params:
-            coordinates (Iterable[Tuple[float, float]]):
-                The coordinates defining the multistep function. Each tuple contains (x, y) values.
+            coordinates (Iterable[Tuple[float, float]]): The coordinates defining the multistep function. Each tuple contains (x, y) values.
             shift (float): Vertical shift of the function, range [0.0, 1.0], default 0.0.
-
 
         Raises:
             InvalidCoordinateError: If the coordinates list is empty.

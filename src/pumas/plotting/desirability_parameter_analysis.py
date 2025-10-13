@@ -378,6 +378,39 @@ def plot_step_analysis():
     )
 
 
+def plot_exponential_decay_analysis():
+    reference_coefficient_parameters = {
+        "k": 1.0,
+        "shift": 0.0,
+    }
+    parameters = [
+        {
+            "parameter_name": "k",
+            "title": "K (Decay Rate) - Low",
+            "values": [0.1, 0.5, 1.0, 2.0],
+        },
+        {
+            "parameter_name": "k",
+            "title": "K (Decay Rate) - High",
+            "values": [2.0, 5.0, 10.0, 20.0],
+        },
+        {
+            "parameter_name": "shift",
+            "title": "Shift",
+            "values": [0.0, 0.2, 0.4, 0.6, 0.8],
+        },
+    ]
+
+    plot_parameter_analysis(
+        desirability_class=desirability_catalogue.get("exponential_decay"),
+        parameters=parameters,
+        reference_coefficient_parameters=reference_coefficient_parameters,
+        vertical_lines_x_values=[0.0, 1.0, 2.0],
+        x_range=(0, 5),
+        figsize=(18, 12),
+    )
+
+
 if __name__ == "__main__":
     print(
         """
@@ -392,3 +425,4 @@ if __name__ == "__main__":
     # plot_leftstep_analysis()
     # plot_rightstep_analysis()
     # plot_step_analysis()
+    # plot_exponential_decay_analysis()
