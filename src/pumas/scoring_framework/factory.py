@@ -5,7 +5,7 @@ from typing import Any, Dict, Union, cast
 from pumas.scoring_framework.models import InputData
 from pumas.scoring_framework.numeric_foerp import NumericFOERPScoringStrategy
 from pumas.scoring_framework.numeric_noerp import NumericScoringStrategy
-from pumas.scoring_profile.scoring_profile import ScoringProfile
+from pumas.scoring_profile.models import ScoringProfile
 from pumas.uncertainty_management.distributions.models import DistributionValue
 from pumas.uncertainty_management.uncertainties.models import UncertainValue
 from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import (

@@ -66,6 +66,8 @@ class WeightedArithmeticMeanAggregation(Aggregation):
     2.30+/-0.16
     """
 
+    name = "arithmetic_mean"
+
     def compute_numeric(
         self,
         values: List[Union[float, None]],

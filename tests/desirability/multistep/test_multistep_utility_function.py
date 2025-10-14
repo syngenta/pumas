@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 
-from pumas.desirability.multistep import multistep
+from pumas.desirability.multistep import InvalidCoordinateError, multistep
 
 
 @pytest.fixture
@@ -40,47 +40,70 @@ def desirability_utility_function():
             2.0,
             0.5,
         ],  # x exactly at middle coordinate
+        [[(1.0, 0.0), (3.0, 1.0)], 2.0, 0.5],
+        [[(1.0, 0.0), (2.0, 1.0)], 1.5, 0.5],
+        [[(1.0, 0.5), (2.0, 1.0)], 1.0, 0.5],
+        [[(1.0, 0.5), (2.0, 1.0)], 2.0, 1.0],
+        [[(1.0, 0.0), (2.0, 1.0)], 1.25, 0.25],
+        [[(1.0, 0.0), (2.0, 1.0)], 1.75, 0.75],
     ],
 )
-def test_multi_step(desirability_utility_function, coordinates, x, expected):
+def test_multistep(desirability_utility_function, coordinates, x, expected):
+    """
+    This test covers various common interpolation cases, including
+    midpoint, endpoints, and fractional points between two given coordinates.
+    """  # noqa E501
     params = {"coordinates": coordinates, "shift": 0.0}
     result = desirability_utility_function(x=x, **params)
     assert math.isclose(result, expected, rel_tol=1e-9, abs_tol=1e-9)
 
 
 @pytest.mark.parametrize(
-    "x, coordinates, expected",
+    "coordinates, x, expected",
     [
-        (2.0, [(1.0, 0.0), (3.0, 1.0)], 0.5),  # Basic interpolation
-        (1.5, [(1.0, 0.0), (2.0, 1.0)], 0.5),  # Midpoint
-        (1.0, [(1.0, 0.5), (2.0, 1.0)], 0.5),  # x equals first coordinate
-        (2.0, [(1.0, 0.5), (2.0, 1.0)], 1.0),  # x equals second coordinate
-        (1.25, [(1.0, 0.0), (2.0, 1.0)], 0.25),  # Quarter point
-        (1.75, [(1.0, 0.0), (2.0, 1.0)], 0.75),  # Three-quarter point
+        [[(1.0, 0.3), (1.0, 0.7), (2.0, 0.8)], 1.0, 0.3],  # case one
+        [[(1.0, 0.7), (1.0, 0.3), (2.0, 0.8)], 1.0, 0.7],  # case two
+        [
+            [(2.0, 0.8), (1.0, 0.7), (1.0, 0.3)],
+            1.0,
+            0.7,
+        ],  # case one, unsorted coordinates
+        [
+            [(2.0, 0.8), (1.0, 0.3), (1.0, 0.7)],
+            1.0,
+            0.3,
+        ],  # case two, unsorted coordinates
+        [[(3.0, 0.42), (3.0, 1.0), (4.0, 1.0), (4.0, 0.42)], 4.0, 1.0],  # case three
     ],
 )
-def test_multistep_basic(desirability_utility_function, x, coordinates, expected):
+def test_multistep_with_walls(desirability_utility_function, coordinates, x, expected):
     """
-    Test basic multistep scenarios.
-
-    This test covers various common interpolation cases, including
-    midpoint, endpoints, and fractional points between two given coordinates.
-    """  # noqa E501
+    This test covers the case where the coordinates include a wall
+    In case of a wall, the function should return the y-value of the first point
+    """
     params = {"coordinates": coordinates, "shift": 0.0}
     result = desirability_utility_function(x=x, **params)
-    assert math.isclose(result, expected, rel_tol=1e-9)
+    assert math.isclose(result, expected, rel_tol=1e-9, abs_tol=1e-9)
 
 
-@pytest.mark.parametrize(
-    "coordinates, error_msg",
-    [
-        (
-            [(1.0, 0.5)],
-            "At least two coordinates are required to form a valid multistep",
-        ),  # Single point
-    ],
-)
-def test_multistep_single_point(desirability_utility_function, coordinates, error_msg):
+def test_multistep_no_coordinates(desirability_utility_function):
+    """
+    Test multistep behavior with no coordinates.
+
+    Hypothesis:
+    The function should raise a ValueError when no coordinates are provided,
+    as at least two points are required to define a multistep function.
+
+    This test verifies that the function correctly identifies and rejects this invalid input.
+    """  # noqa E501
+    params = {"coordinates": [], "shift": 0.0}
+    with pytest.raises(
+        InvalidCoordinateError, match="Coordinates list cannot be empty"
+    ):
+        desirability_utility_function(x=1.0, **params)
+
+
+def test_multistep_single_point(desirability_utility_function):
     """
     Test multistep behavior for a single point.
 
@@ -90,8 +113,36 @@ def test_multistep_single_point(desirability_utility_function, coordinates, erro
 
     This test verifies that the function correctly identifies and rejects this invalid input.
     """  # noqa E501
+    params = {"coordinates": [(1.0, 0.5)], "shift": 0.0}
+    with pytest.raises(
+        InvalidCoordinateError,
+        match="At least two coordinates are required to form a valid multistep",
+    ):
+        desirability_utility_function(x=1.0, **params)
+
+
+@pytest.mark.parametrize(
+    "coordinates",
+    [
+        ([(1.0, 0.5), (1.0, 0.5)]),  # Two identical points
+        ([(1.0, 0.5), (1.0, 0.5), (1.0, 0.5)]),  # Three identical points
+        (
+            [(1.0, 0.5), (1.0, 0.5), (2.0, 0.5), (2.0, 0.5)]
+        ),  # Two pairs of identical points
+    ],
+)
+def test_multistep_duplicate_coordinates(desirability_utility_function, coordinates):
+    """
+    Test multistep behavior with duplicate coordinates.
+
+    Hypothesis:
+    The function should raise a ValueError when given duplicate coordinates,
+    as at least two different points are required to define a multistep function.
+
+    This test verifies that the function correctly identifies and rejects this invalid input.
+    """  # noqa E501
     params = {"coordinates": coordinates, "shift": 0.0}
-    with pytest.raises(ValueError, match=error_msg):
+    with pytest.raises(InvalidCoordinateError, match="Duplicate coordinates found:"):
         desirability_utility_function(x=1.0, **params)
 
 
@@ -114,7 +165,7 @@ def test_multistep_invalid_values(desirability_utility_function, x, coordinates)
     This test verifies the function's behavior with invalid input values.
     """  # noqa E501
     params = {"coordinates": coordinates, "shift": 0.0}
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidCoordinateError):
         desirability_utility_function(x=x, **params)
 
 
@@ -169,7 +220,9 @@ def test_multistep_reverse_order(desirability_utility_function, x, coordinates):
     "x, coordinates, expected",
     [
         (0.5, [(1.0, 0.0), (2.0, 1.0)], 0.0),  # x below range
+        (0.5, [(2.0, 1.0), (1.0, 0.0)], 0.0),  # x below range, unsorted coordinates
         (2.5, [(1.0, 0.0), (2.0, 1.0)], 1.0),  # x above range
+        (2.5, [(2.0, 1.0), (1.0, 0.0)], 1.0),  # x above range, unsorted coordinates
         (1.0, [(1.0, 0.5), (2.0, 0.7), (3.0, 0.9)], 0.5),  # x at first point
         (3.0, [(1.0, 0.5), (2.0, 0.7), (3.0, 0.9)], 0.9),  # x at last point
         (2.0, [(1.0, 0.5), (2.0, 0.7), (3.0, 0.9)], 0.7),  # x at middle point

@@ -69,6 +69,8 @@ class WeightedGeometricMeanAggregation(Aggregation):
     2.13+/-0.13
     """
 
+    name = "geometric_mean"
+
     def compute_numeric(
         self,
         values: List[Union[float, None]],

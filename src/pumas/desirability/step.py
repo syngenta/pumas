@@ -175,6 +175,7 @@ def compute_ufloat_step(
 
 
 class RightStep(Desirability):
+    name = "rightstep"
     """
     Right Step desirability function implementation.
 
@@ -244,7 +245,7 @@ class RightStep(Desirability):
                     "type": "float",
                     "min": float("-inf"),
                     "max": float("inf"),
-                    "default": None,
+                    "default": 0.0,
                 },
                 "high": {
                     "type": "float",
@@ -299,6 +300,7 @@ class RightStep(Desirability):
 
 
 class LeftStep(Desirability):
+    name = "leftstep"
     """
     Left Step desirability function implementation.
 
@@ -373,7 +375,7 @@ class LeftStep(Desirability):
                     "type": "float",
                     "min": float("-inf"),
                     "max": float("inf"),
-                    "default": None,
+                    "default": 0.0,
                 },
                 "shift": {"type": "float", "min": 0.0, "max": 1.0, "default": 0.0},
             }
@@ -422,6 +424,7 @@ class LeftStep(Desirability):
 
 
 class Step(Desirability):
+    name = "step"
     """
     Centered Step desirability function implementation.
 

@@ -14,7 +14,7 @@ from pumas.scoring_framework.scoring_function import (
     TypedAggregation,
     TypedDesirability,
 )
-from pumas.scoring_profile.scoring_profile import ScoringProfile
+from pumas.scoring_profile.models import ScoringProfile
 from pumas.uncertainty_management.uncertainties.uncertainties_wrapper import UFloat
 
 

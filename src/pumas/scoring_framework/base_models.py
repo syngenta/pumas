@@ -4,7 +4,7 @@ from typing import Any, Dict, Generic
 from pumas.scoring_framework.models import InputData, ScoringResults
 from pumas.scoring_framework.scoring_function import ScoringFunction
 from pumas.scoring_framework.type_definitions import R, T
-from pumas.scoring_profile.scoring_profile import ScoringProfile
+from pumas.scoring_profile.models import ScoringProfile
 
 
 class BaseScoringStrategy(Generic[T, R], ABC):

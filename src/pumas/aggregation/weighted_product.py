@@ -63,6 +63,8 @@ class WeightedProductAggregation(Aggregation):
      2.13+/-0.13
     """  # noqa E501
 
+    name = "product"
+
     def compute_numeric(
         self,
         values: List[Union[float, None]],

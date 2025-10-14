@@ -11,6 +11,7 @@ Desirability
     step
     multistep
     value_mapping
+    exponential_decay
 
 
 .. automodule:: pumas.desirability.desirability
